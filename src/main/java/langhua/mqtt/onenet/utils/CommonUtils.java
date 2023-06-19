@@ -96,8 +96,8 @@ public class CommonUtils {
         return null;
     }
 
-    public static String getCmdRequestTopicPrefix(String groupId, String deviceName) {
-        return "$sys/" + groupId + "/" + deviceName + "/cmd/request/";
+    public static String getDeviceTopicPrefix(String groupId, String deviceName) {
+        return "$sys/" + groupId + "/" + deviceName + "/";
     }
 
     /**

@@ -52,8 +52,6 @@ public abstract class AbstractSandMqttDevice implements MqttCallback {
     public abstract void init();
 
     public void disconnect() {
-//        Disconnector disc = new Disconnector();
-//        disc.doDisconnect();
         try {
             client.disconnect(null, null);
         } catch (MqttException e) {
@@ -128,7 +126,7 @@ public abstract class AbstractSandMqttDevice implements MqttCallback {
     }
 
     /**
-     * Send a message to an MQTT server to reponse a command
+     * Send a message to an MQTT server to response a command
      *
      * @param topicName the name of the topic to publish to
      * @param qos       the quality of service to delivery the message at (0,1,2)

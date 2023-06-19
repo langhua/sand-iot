@@ -134,7 +134,7 @@ public class IpAddressUtils {
                 }
             }
         }
-        Debug.logVerbose("-- ipMap: " + ipMap, MODULE);
+        Debug.logInfo("-- ipMap: " + ipMap, MODULE);
         return isIpChanged;
     }
 }

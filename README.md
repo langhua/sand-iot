@@ -21,3 +21,6 @@ sand-iot是SandFlower的组成部分，部署在ofbiz-framework的plugins目录�
    * 设备订阅和执行命令，返回执行结果
    * 不同组之间设备隔离，不能发送和接收/订阅消息
 
+### 开发笔记
+1. [sand-iot开发笔记](docs/zh/develop.md)
+2. [OneNET MQTT开发笔记](docs/zh/onenet-dev.md)

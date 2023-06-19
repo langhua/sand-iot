@@ -47,10 +47,6 @@ public class OnenetMqttDevice extends AbstractSandMqttDevice {
     // see https://open.iot.10086.cn/doc/mqtt/book/device-develop/protocol.html
     protected boolean clean = true;
 
-//    private final String ONENET_CMD_REQUEST_PREFIX;
-//    private final String ONENET_CMD_REQUEST_TOPIC;
-//    private final String ONENET_CMD_RESPONSE_PREFIX;
-
     protected final MqttClientPersistence dataStore;
 
     private final String ofbizHome = System.getProperty("ofbiz.home");
@@ -74,9 +70,6 @@ public class OnenetMqttDevice extends AbstractSandMqttDevice {
         this.deviceId = deviceId;
         this.deviceKey = deviceKey;
         this.password = CommonUtils.generateMqttPassword(groupId, deviceName, deviceKey);
-//        this.ONENET_CMD_REQUEST_PREFIX = "$sys/" + groupId + "/" + deviceName + "/cmd/request/";
-//        this.ONENET_CMD_REQUEST_TOPIC = this.ONENET_CMD_REQUEST_PREFIX + "+";
-//        this.ONENET_CMD_RESPONSE_PREFIX = "$sys/" + groupId + "/" + deviceName + "/cmd/response/";
         this.dataStore = UtilProperties.getPropertyAsBoolean("mqtt", "mqtt.onenet.client.usefsdatastore", true) ? fsDataStore : memDataStore;
     }
 
@@ -112,18 +105,23 @@ public class OnenetMqttDevice extends AbstractSandMqttDevice {
 
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        Debug.logInfo("[" + getGroupId() +"] Message Arrived: [" + topic + "] " + new String(message.getPayload()), MODULE);
-        if (topic.startsWith(CommonUtils.getCmdRequestTopicPrefix(getGroupId(), getDeviceName()))) {
+        Debug.logInfo("[" + getGroupId() + "/" + getDeviceName() +"] Message Arrived: [" + topic + "] " + new String(message.getPayload()), MODULE);
+        if (topic.startsWith(CommonUtils.getDeviceTopicPrefix(getGroupId(), getDeviceName()))) {
             String cmdId = topic.substring(topic.lastIndexOf('/') + 1);
             Debug.logInfo("Command id: " + cmdId, MODULE);
             try {
-                String reponse = new String(message.getPayload());
-                if ("ipaddress".equals(reponse)) {
-                    reponse = IpAddressUtils.getIpAddress();
+                String response = new String(message.getPayload());
+                if ("ipaddress".equals(response)) {
+                    response = IpAddressUtils.getIpAddress();
+                    Debug.logInfo("Command response:" + response, MODULE);
                 } else {
-                    reponse = "command [" + reponse + "] message received.";
+                    response = "command [" + response + "] message received.";
                 }
-                cmdResponse(CommonUtils.getCmdResponseTopic(getGroupId(), getDeviceName(), cmdId), 0, reponse.getBytes(StandardCharsets.UTF_8));
+                if (cmdId.equals("accepted") || cmdId.equals("rejected")) {
+                    Debug.logInfo("--- Unnecessary to response this message.", MODULE);
+                } else {
+                    cmdResponse(CommonUtils.getCmdResponseTopic(getGroupId(), getDeviceName(), cmdId), 0, response.getBytes(StandardCharsets.UTF_8));
+                }
             } catch (Throwable e) {
                 Debug.logError(e.getMessage(), MODULE);
             }
@@ -233,13 +231,13 @@ public class OnenetMqttDevice extends AbstractSandMqttDevice {
         String acceptedTopic = CommonUtils.getDataPubAcceptedTopic(device.getGroupId(), device.getDeviceName());
         String rejectedTopic = CommonUtils.getDataPubRejectedTopic(device.getGroupId(), device.getDeviceName());
         try {
-            device.subscribe(acceptedTopic, 0);
+            subscribe(acceptedTopic, 0);
         } catch (Throwable e) {
             Debug.logError(e, MODULE);
             return false;
         }
         try {
-            device.subscribe(rejectedTopic, 0);
+            subscribe(rejectedTopic, 0);
         } catch (Throwable e) {
             Debug.logError(e, MODULE);
             return false;

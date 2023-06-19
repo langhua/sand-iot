@@ -11,8 +11,15 @@ OneNET MQTT实现的功能包括：
 
 运行FunctionTests测试用例：
 1. 如下图所示，新建一个FunctionTests测试用例：
-   ![FunctionTests测试用例](images/onenet_FuntionTests.png)
+   ![新建FunctionTests测试用例](images/onenet_FuntionTests.png)
 
 
 2. 运行FunctionTests：
-   ![FunctionTests测试用例](images/onenet_FuntionTests_success.png)
+   ![运行FunctionTests测试用例](images/onenet_FuntionTests_success.png)
+
+运行IsolationTests（隔离）测试用例：
+1. 如下图所示，新建一个IsolationTests测试用例：
+   ![新建IsolationTests测试用例](images/onenet_IsolationTests.png)
+
+2. 运行IsolationTests:
+   ![运行IsolationTests测试用例](images/onenet_IsolationTests_success.png)
