@@ -39,14 +39,10 @@ public class IsolationTests extends AbstractTestMqtt {
         initialTcpDevices(MODULE);
         tcpIsolationTests();
         tearDownTcpDevices(MODULE);
-        Debug.logInfo("Start waiting 10 seconds TCP devices disconnect to OneNET MQTT server...", MODULE);
-        Thread.sleep(10000);
 
         initialSslDevices(MODULE);
         sslIsolationTests();
         tearDownSslDevices(MODULE);
-        Debug.logInfo("Start waiting 10 seconds SSL devices disconnect to OneNET MQTTs server...", MODULE);
-        Thread.sleep(10000);
         Debug.logInfo("=== IsolationTests has been finished successfully. ===", MODULE);
     }
 

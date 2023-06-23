@@ -18,7 +18,10 @@
  *******************************************************************************/
 package langhua.mqtt.common;
 
+import org.apache.ofbiz.base.util.Debug;
+
 public class MqttClientThread extends Thread {
+    private static final String MODULE = MqttClientThread.class.getName();
     AbstractSandMqttDevice mqttDevice;
 
     protected boolean doomed;
@@ -41,5 +44,13 @@ public class MqttClientThread extends Thread {
 
     public AbstractSandMqttDevice getMqttDevice() {
         return mqttDevice;
+    }
+
+    public void interrupt() {
+        if (mqttDevice != null) {
+            if (mqttDevice.isConnected()) mqttDevice.disconnect();
+            Debug.logInfo("Device[" + mqttDevice.client.getClientId() + "]" + " run for " + (System.currentTimeMillis() - startTime)/1000 + " seconds", MODULE);
+            mqttDevice = null;
+        }
     }
 }

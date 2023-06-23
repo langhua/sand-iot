@@ -39,14 +39,10 @@ public class FunctionTests extends AbstractTestMqtt {
         initialTcpDevices(MODULE);
         tcpFunctionTests();
         tearDownTcpDevices(MODULE);
-        Debug.logInfo("Wait 10 seconds TCP devices disconnect to OneNET MQTT server...", MODULE);
-        Thread.sleep(10000);
 
         initialSslDevices(MODULE);
         sslFunctionTests();
         tearDownSslDevices(MODULE);
-        Debug.logInfo("Wait 10 seconds SSL devices disconnect to OneNET MQTTs server...", MODULE);
-        Thread.sleep(10000);
         Debug.logInfo("=== FunctionTests has been finished successfully. ===", MODULE);
     }
 

@@ -13,6 +13,10 @@ OneNET MQTT实现的功能包括：
 1. 如下图所示，新建一个FunctionTests测试用例：
    ![新建FunctionTests测试用例](images/onenet_FuntionTests.png)
 
+   在运行一栏填入：
+   ```gradle
+   :test --tests "langhua.mqtt.onenet.test.FunctionTests"
+   ```
 
 2. 运行FunctionTests：
    ![运行FunctionTests测试用例](images/onenet_FuntionTests_success.png)
@@ -20,6 +24,11 @@ OneNET MQTT实现的功能包括：
 运行IsolationTests（隔离）测试用例：
 1. 如下图所示，新建一个IsolationTests测试用例：
    ![新建IsolationTests测试用例](images/onenet_IsolationTests.png)
+
+   在运行一栏填入：
+   ```gradle
+   :test --tests "langhua.mqtt.onenet.test.IsolationTests"
+   ```
 
 2. 运行IsolationTests:
    ![运行IsolationTests测试用例](images/onenet_IsolationTests_success.png)
