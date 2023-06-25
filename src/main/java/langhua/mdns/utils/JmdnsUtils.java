@@ -22,6 +22,10 @@ import org.apache.ofbiz.base.util.Debug;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.*;
 
 /**
  * Jmdns utils
@@ -30,39 +34,32 @@ public class JmdnsUtils {
 
     private static final String MODULE = JmdnsUtils.class.getName();
 
-    private static ServiceInfo httpServiceInfo = ServiceInfo.create("_sandflower_http._tcp.local.", "sandflower_mdns", 5353, "SandFlower Http Service");
-    private static ServiceInfo httpsServiceInfo = ServiceInfo.create("_sandflower_https._tcp.local.", "sandflower_mdns", 5353, "SandFlower Https Service");
-    private static ServiceInfo raopServiceInfo = ServiceInfo.create("_sandflower_raop._tcp.local.", "sandflower_mdns", 5353, "SandFlower Roap Service");
+    private static ServiceInfo httpServiceInfo = ServiceInfo.create("_sandflower_http._tcp.local.", "sandflower_http", 8080, "SandFlower Http Service");
+    private static ServiceInfo httpsServiceInfo = ServiceInfo.create("_sandflower_https._tcp.local.", "sandflower_https", 8443, "SandFlower Https Service");
 
-    /**
-     * Register mdns
-     * @param mDNS
-     * @return
-     */
-    public boolean registerMdns(JmDNS mDNS){
+    public static Set<InetAddress> getInetAddressSet() {
+        Set<InetAddress> inetAddrs = new HashSet<>();
+        Enumeration<NetworkInterface> nis = null;
         try {
-            mDNS.registerService(httpServiceInfo);
-            mDNS.registerService(httpsServiceInfo);
-            mDNS.registerService(raopServiceInfo);
-            return true;
-        } catch (Exception e) {
+            nis = NetworkInterface.getNetworkInterfaces();
+        } catch (SocketException e) {
             Debug.logError(e.getMessage(), MODULE);
-            return false;
         }
-    }
-
-    /**
-     * Unregister mdns
-     */
-    public boolean unregisterMdns(JmDNS jmDNS){
-        try {
-            jmDNS.unregisterService(httpServiceInfo);
-            jmDNS.unregisterService(httpsServiceInfo);
-            jmDNS.unregisterService(raopServiceInfo);
-            return true;
-        } catch (Exception e) {
-            Debug.logError(e.getMessage(), MODULE);
-            return false;
+        if (nis != null) {
+            while (nis.hasMoreElements()) {
+                NetworkInterface ni = nis.nextElement();
+                String niName = ni.getName().toLowerCase();
+                Debug.logInfo("Network interface found:" + ni, MODULE);
+                Enumeration<InetAddress> addresses = ni.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress address = addresses.nextElement();
+                    if (!address.isLinkLocalAddress() && !address.isLoopbackAddress()) {
+                        inetAddrs.add(address);
+                        Debug.logInfo("-- InetAddress added: " + address, MODULE);
+                    }
+                }
+            }
         }
+        return inetAddrs;
     }
 }
