@@ -19,72 +19,63 @@
 package langhua.mdns.common;
 
 import langhua.mdns.services.JmdnsService;
-import langhua.mdns.utils.JmdnsUtils;
 import org.apache.ofbiz.base.util.Debug;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
+import javax.jmdns.ServiceListener;
+import javax.jmdns.impl.ServiceInfoImpl;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class JmdnsThread extends Thread {
     private static final String MODULE = JmdnsThread.class.getName();
-    private static ServiceInfo httpServiceInfo = ServiceInfo.create("_http._tcp.local.", "_sandflower_http", 8080, "SandFlower Http Service");
-    private static ServiceInfo httpsServiceInfo = ServiceInfo.create("_https._tcp.local.", "_sandflower_https", 8443, "SandFlower Https Service");
-    private Set<JmDNS> jmdnsSet;
+
+    private JmDNS jmdns;
 
     protected boolean doomed;
-    private long startTime;
+    private final long startTime;
 
     public JmdnsThread(ThreadGroup threadGroup, String name) {
         super(threadGroup, name);
         setDaemon(false);
-        jmdnsSet = new HashSet<>();
         doomed = false;
         // set start time
         startTime = System.currentTimeMillis();
     }
 
     public void start() {
-        if (jmdnsSet == null) {
-            jmdnsSet = new HashSet<>();
-        }
-        if (jmdnsSet.isEmpty()) {
-            try {
-                boolean isFirst = true;
-                for (InetAddress ia : JmdnsUtils.getInetAddressSet()) {
-                    JmDNS jmdns = JmDNS.create(ia);
-                    if (isFirst) {
-                        jmdns.registerService(httpServiceInfo);
-                        jmdns.registerService(httpsServiceInfo);
-                    } else {
-                        jmdns.registerService(httpServiceInfo.clone());
-                        jmdns.registerService(httpsServiceInfo.clone());
-                    }
-                    jmdns.addServiceListener("_http._tcp.local.", new JmdnsService.SampleListener());
-                    jmdns.addServiceListener("_https._tcp.local.", new JmdnsService.SampleListener());
-                    jmdnsSet.add(jmdns);
-                    isFirst = false;
-                }
-            } catch (IOException e) {
-                Debug.logError("Failed to create jmdns: " + e.getMessage(), MODULE);
-            }
+        try {
+            InetAddress ia = MdnsUtils.getProperInetAddress();
+            int port = 8080;
+            Debug.logInfo("-- ia: " + ia, MODULE);
+            ServiceListener sl = new JmdnsService();
+            jmdns = JmDNS.create(ia, MdnsUtils.MDNS_HOST_NAME);
+            Map<ServiceInfo.Fields, String> qualifiedNameMap = new HashMap<>();
+            qualifiedNameMap.put(ServiceInfo.Fields.Domain, "local");
+            qualifiedNameMap.put(ServiceInfo.Fields.Application, "http");
+            qualifiedNameMap.put(ServiceInfo.Fields.Protocol, "tcp");
+            qualifiedNameMap.put(ServiceInfo.Fields.Instance, MdnsUtils.MDNS_HOST_NAME);
+            qualifiedNameMap.put(ServiceInfo.Fields.Subtype, "");
+            Map<String, String> props = new HashMap<>();
+            props.put("description", MdnsUtils.MDNS_DESCRIPTION);
+            props.put("base_url", "http://" + MdnsUtils.MDNS_HOST_NAME + ":" + port);
+            ServiceInfoImpl httpServiceInfo = new ServiceInfoImpl(qualifiedNameMap, port, 0, 0, true, props);
+            jmdns.registerService(httpServiceInfo);
+            jmdns.addServiceListener(MdnsUtils.MDNS_TYPE, sl);
+        } catch (IOException e) {
+            Debug.logError("Failed to create jmdns: " + e.getMessage(), MODULE);
         }
     }
 
     public void interrupt() {
-        if (jmdnsSet != null && !jmdnsSet.isEmpty()) {
-            for (JmDNS jmdns : jmdnsSet) {
-                jmdns.unregisterAllServices();
-                try {
-                    jmdns.close();
-                } catch (IOException e) {
-                    Debug.logError(e, MODULE);
-                }
+        if (jmdns != null) {
+            jmdns.unregisterAllServices();
+            try {
+                jmdns.close();
+            } catch (IOException e) {
+                Debug.logError(e, MODULE);
             }
         }
         Debug.logInfo("JmdnsThread run for " + (System.currentTimeMillis() - startTime)/1000 + " seconds", MODULE);

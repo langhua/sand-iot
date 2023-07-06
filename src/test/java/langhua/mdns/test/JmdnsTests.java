@@ -24,6 +24,11 @@ import junit.framework.TestSuite;
 import langhua.mdns.common.JmdnsThread;
 import org.apache.ofbiz.base.util.Debug;
 
+import javax.jmdns.JmmDNS;
+import javax.jmdns.ServiceInfo;
+import java.io.IOException;
+import java.net.InetAddress;
+
 public class JmdnsTests extends TestCase {
     private static final String MODULE = JmdnsTests.class.getName();
 
@@ -41,11 +46,63 @@ public class JmdnsTests extends TestCase {
     public void testAll() throws Exception {
         initialJmdnsThread();
         Thread.sleep(3000);
+        scanJmdns();
+        Debug.logInfo("Now sleep about 10 minutes, you may proof the above mdns.", MODULE);
+        Thread.sleep(600000);
         jmdnsThread.interrupt();
     }
 
+    private void scanJmdns() throws InterruptedException, IOException {
+        Debug.logInfo("Start to scan mdns ...", MODULE);
+        JmmDNS registry = JmmDNS.Factory.getInstance();
+        Thread.sleep(10000);
+        ServiceInfo[] httpSiArray = registry.list("_http._tcp.local.");
+        for(ServiceInfo si : httpSiArray) {
+            if (si.getInetAddresses().length > 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("[");
+                boolean isFirst = true;
+                for (InetAddress ia : si.getInetAddresses()) {
+                    if (!isFirst) {
+                        sb.append(", ");
+                    } else {
+                        isFirst = false;
+                    }
+                    sb.append(ia.getHostAddress());
+                    sb.append(":");
+                    sb.append(si.getPort());
+                }
+                sb.append("]");
+                Debug.logInfo("-- Service Info found: type:" + si.getType() + ", name:" + si.getName() + ", ip:" + sb.toString(), MODULE);
+                Debug.logInfo("---- You can try \"ping " + si.getName() + "\" in a terminal.", MODULE);
+            }
+        }
+        ServiceInfo[] httpsSiArray = registry.list("_https._tcp.local.");
+        for(ServiceInfo si : httpsSiArray) {
+            if (si.getInetAddresses().length > 0) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("[");
+                boolean isFirst = true;
+                for (InetAddress ia : si.getInetAddresses()) {
+                    if (!isFirst) {
+                        sb.append(", ");
+                    } else {
+                        isFirst = false;
+                    }
+                    sb.append(ia.getHostAddress());
+                    sb.append(":");
+                    sb.append(si.getPort());
+                }
+                sb.append("]");
+                Debug.logInfo("-- Service Info found: type:" + si.getType() + ", name:" + si.getName() + ", ip:" + sb.toString(), MODULE);
+                Debug.logInfo("---- You can try \"ping " + si.getName() + "\" in a terminal.", MODULE);
+            }
+        }
+        registry.close();
+    }
+
     protected void initialJmdnsThread() {
-        Debug.logInfo("Initial TCP threads and devices ...", MODULE);
+        Debug.logInfo("Initial Jmdns thread ...", MODULE);
         ThreadGroup threadGroup = Thread.currentThread().getThreadGroup();
         int i = threadGroup.activeCount();
         Debug.logInfo("--- thread group[" + threadGroup.getName() + "] has [" + i + "] threads.", MODULE);

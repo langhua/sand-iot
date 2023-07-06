@@ -20,5 +20,6 @@ dependencies {
     pluginLibsCompile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5',
                       'com.google.code.gson:gson:2.10.1',
                       'com.squareup.okhttp3:okhttp:4.11.0',
-                      'org.jmdns:jmdns:3.5.8'
+                      'org.jmdns:jmdns:3.5.8',
+                      'org.slf4j:slf4j-simple:2.0.1'
 }

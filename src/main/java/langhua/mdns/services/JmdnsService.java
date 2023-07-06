@@ -23,23 +23,21 @@ import javax.jmdns.ServiceListener;
 
 import org.apache.ofbiz.base.util.Debug;
 
-public class JmdnsService {
+public class JmdnsService implements ServiceListener {
     private static final String MODULE = JmdnsService.class.getName();
 
-    public static class SampleListener implements ServiceListener {
-        @Override
-        public void serviceAdded(ServiceEvent event) {
-            Debug.logInfo("Jmdns Service added   : " + event.getName() + "." + event.getType(), MODULE);
-        }
+    @Override
+    public void serviceAdded(ServiceEvent event) {
+        Debug.logInfo("Jmdns Service added   : " + event.getInfo(), MODULE);
+    }
 
-        @Override
-        public void serviceRemoved(ServiceEvent event) {
-            Debug.logInfo("Jmdns Service removed : " + event.getName() + "." + event.getType(), MODULE);
-        }
+    @Override
+    public void serviceRemoved(ServiceEvent event) {
+        Debug.logInfo("Jmdns Service removed : " + event.getName() + "." + event.getType(), MODULE);
+    }
 
-        @Override
-        public void serviceResolved(ServiceEvent event) {
-            Debug.logInfo("Jmdns Service resolved: " + event.getInfo(), MODULE);
-        }
+    @Override
+    public void serviceResolved(ServiceEvent event) {
+        Debug.logInfo("Jmdns Service resolved: " + event.getInfo(), MODULE);
     }
 }
