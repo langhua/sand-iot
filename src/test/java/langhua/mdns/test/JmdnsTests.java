@@ -77,27 +77,6 @@ public class JmdnsTests extends TestCase {
                 Debug.logInfo("---- You can try \"ping " + si.getName() + "\" in a terminal.", MODULE);
             }
         }
-        ServiceInfo[] httpsSiArray = registry.list("_https._tcp.local.");
-        for(ServiceInfo si : httpsSiArray) {
-            if (si.getInetAddresses().length > 0) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("[");
-                boolean isFirst = true;
-                for (InetAddress ia : si.getInetAddresses()) {
-                    if (!isFirst) {
-                        sb.append(", ");
-                    } else {
-                        isFirst = false;
-                    }
-                    sb.append(ia.getHostAddress());
-                    sb.append(":");
-                    sb.append(si.getPort());
-                }
-                sb.append("]");
-                Debug.logInfo("-- Service Info found: type:" + si.getType() + ", name:" + si.getName() + ", ip:" + sb.toString(), MODULE);
-                Debug.logInfo("---- You can try \"ping " + si.getName() + "\" in a terminal.", MODULE);
-            }
-        }
         registry.close();
     }
 

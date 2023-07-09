@@ -18,12 +18,10 @@
  *******************************************************************************/
 package langhua.mdns.common;
 
-import langhua.mdns.services.JmdnsService;
 import org.apache.ofbiz.base.util.Debug;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
-import javax.jmdns.ServiceListener;
 import javax.jmdns.impl.ServiceInfoImpl;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -50,7 +48,6 @@ public class JmdnsThread extends Thread {
             InetAddress ia = MdnsUtils.getProperInetAddress();
             int port = 8080;
             Debug.logInfo("-- ia: " + ia, MODULE);
-            ServiceListener sl = new JmdnsService();
             jmdns = JmDNS.create(ia, MdnsUtils.MDNS_HOST_NAME);
             Map<ServiceInfo.Fields, String> qualifiedNameMap = new HashMap<>();
             qualifiedNameMap.put(ServiceInfo.Fields.Domain, "local");
@@ -63,7 +60,6 @@ public class JmdnsThread extends Thread {
             props.put("base_url", "http://" + MdnsUtils.MDNS_HOST_NAME + ":" + port);
             ServiceInfoImpl httpServiceInfo = new ServiceInfoImpl(qualifiedNameMap, port, 0, 0, true, props);
             jmdns.registerService(httpServiceInfo);
-            jmdns.addServiceListener(MdnsUtils.MDNS_TYPE, sl);
         } catch (IOException e) {
             Debug.logError("Failed to create jmdns: " + e.getMessage(), MODULE);
         }

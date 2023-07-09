@@ -28,13 +28,13 @@ under the License.
 
 <!--    <test-suite loader="main" location="testdef/mqtttests.xml"/>-->
 
-<!--    <webapp name="iot"-->
-<!--        title="IoT Integration"-->
-<!--        server="default-server"-->
-<!--        location="webapp/iot"-->
-<!--        mount-point="/iot"-->
-<!--        base-permission="OFBTOOLS"-->
-<!--        menu-name="secondary"-->
-<!--        app-bar-display="false" />-->
+    <webapp name="iot"
+        title="IoT Integration"
+        server="default-server"
+        location="webapp/iot"
+        mount-point="/iot"
+        base-permission="OFBTOOLS"
+        menu-name="secondary"
+        app-bar-display="false" />
 
 </ofbiz-component>

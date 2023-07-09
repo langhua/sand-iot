@@ -42,10 +42,11 @@ public class MdnsUtils {
 
     public static final String MDNS_DESCRIPTION = UtilProperties.getPropertyValue("mdns", "mdns.description", MDNS_HOST_NAME.toLowerCase() + "_http_service");
 
-    private static final String MDNS_IP_PREFERRED = UtilProperties.getPropertyValue("mdns", "mdns.ip.preferred");
+    private static final String MDNS_IP_PREFERRED = UtilProperties.getPropertyValue("mdns", "mdns.ip.preferred", null);
 
     public static InetAddress getProperInetAddress() {
         InetAddress inetAddr = null;
+        Debug.logInfo("MDNS_IP_PREFERRED: " + MDNS_IP_PREFERRED, MODULE);
         if (MDNS_IP_PREFERRED != null) {
             try {
                 inetAddr = InetAddress.getByAddress(MDNS_IP_PREFERRED.getBytes());
