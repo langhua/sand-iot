@@ -54,7 +54,7 @@ public class IpAddressUtils {
     }
 
     private static StringBuffer getIpDpContent(Map<String, Map<String, String>> ipMap) {
-        long now = System.currentTimeMillis()/1000;
+        long now = System.currentTimeMillis() / 1000;
         boolean isFirstKey = true;
         StringBuffer sb = new StringBuffer(8);
         for (String key : ipMap.keySet()) {

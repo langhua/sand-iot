@@ -21,10 +21,15 @@ package langhua.mdns.common;
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.UtilProperties;
 
-import java.net.*;
+import java.net.InetAddress;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Jmdns utils
@@ -33,14 +38,12 @@ public class MdnsUtils {
 
     private static final String MODULE = MdnsUtils.class.getName();
 
-    public static final String IPV4_KEY = "ipv4";
-    public static final String IPV6_KEY = "ipv6";
-
     public static final String MDNS_HOST_NAME = UtilProperties.getPropertyValue("mdns", "mdns.host.name", "sandflower");
 
-    public static final String MDNS_TYPE = UtilProperties.getPropertyValue("mdns", "mdns.type", "_http._tcp.local.");
+//    public static final String MDNS_TYPE = UtilProperties.getPropertyValue("mdns", "mdns.type", "_http._tcp.local.");
 
-    public static final String MDNS_DESCRIPTION = UtilProperties.getPropertyValue("mdns", "mdns.description", MDNS_HOST_NAME.toLowerCase() + "_http_service");
+    public static final String MDNS_DESCRIPTION = UtilProperties.getPropertyValue("mdns", "mdns.description",
+            MDNS_HOST_NAME.toLowerCase() + "_http_service");
 
     private static final String MDNS_IP_PREFERRED = UtilProperties.getPropertyValue("mdns", "mdns.ip.preferred", null);
 

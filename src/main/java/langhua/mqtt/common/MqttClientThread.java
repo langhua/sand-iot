@@ -22,9 +22,9 @@ import org.apache.ofbiz.base.util.Debug;
 
 public class MqttClientThread extends Thread {
     private static final String MODULE = MqttClientThread.class.getName();
-    AbstractSandMqttDevice mqttDevice;
+    private AbstractSandMqttDevice mqttDevice;
 
-    protected boolean doomed;
+    private boolean doomed;
     private long startTime;
 
     public MqttClientThread(ThreadGroup threadGroup, String name, AbstractSandMqttDevice mqttDevice) {
@@ -36,20 +36,26 @@ public class MqttClientThread extends Thread {
         startTime = System.currentTimeMillis();
     }
 
+    @Override
     public void start() {
         if (mqttDevice != null && !mqttDevice.isConnected()) {
             mqttDevice.init();
         }
     }
 
+    /**
+     * Get this mqtt device.
+     */
     public AbstractSandMqttDevice getMqttDevice() {
         return mqttDevice;
     }
 
+    @Override
     public void interrupt() {
         if (mqttDevice != null) {
             if (mqttDevice.isConnected()) mqttDevice.disconnect();
-            Debug.logInfo("Device[" + mqttDevice.client.getClientId() + "]" + " run for " + (System.currentTimeMillis() - startTime)/1000 + " seconds", MODULE);
+            Debug.logInfo("Device[" + mqttDevice.getClient().getClientId() + "]" + " run for " + (System.currentTimeMillis() - startTime) / 1000
+                    + " seconds", MODULE);
             mqttDevice = null;
         }
     }

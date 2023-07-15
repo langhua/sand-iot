@@ -32,9 +32,12 @@ public class FunctionTests extends AbstractTestMqtt {
      * @return the suite of tests being tested
      */
     public static Test suite() {
-        return new TestSuite( FunctionTests.class );
+        return new TestSuite(FunctionTests.class);
     }
 
+    /**
+     * Tests entrance.
+     */
     public void testAll() throws Exception {
         initialTcpDevices(MODULE);
         tcpFunctionTests();
@@ -48,87 +51,87 @@ public class FunctionTests extends AbstractTestMqtt {
 
     private void tcpFunctionTests() {
         // use group1 key to get info of group1 device1 and device2, should be successful
-        assertNotNull(getDeviceInfo(group1_device1_tcp, group1_id, group1_key));
-        assertNotNull(getDeviceInfo(group1_device2_tcp, group1_id, group1_key));
+        assertNotNull(getDeviceInfo(getGroup1Device1Tcp(), GROUP1_ID, GROUP1_KEY));
+        assertNotNull(getDeviceInfo(getGroup1Device2Tcp(), GROUP1_ID, GROUP1_KEY));
 
         // use group2 key to get info of group2 device1 and device2, should be successful
-        assertNotNull(getDeviceInfo(group2_device1_tcp, group2_id, group2_key));
-        assertNotNull(getDeviceInfo(group2_device2_tcp, group2_id, group2_key));
+        assertNotNull(getDeviceInfo(getGroup2Device1Tcp(), GROUP2_ID, GROUP2_KEY));
+        assertNotNull(getDeviceInfo(getGroup2Device2Tcp(), GROUP2_ID, GROUP2_KEY));
 
         // subscribe publish accepted topic and rejected topic
-        assertTrue(group1_device1_tcp.subPubResponse());
-        assertTrue(group1_device2_tcp.subPubResponse());
-        assertTrue(group2_device1_tcp.subPubResponse());
-        assertTrue(group2_device2_tcp.subPubResponse());
+        assertTrue(getGroup1Device1Tcp().subPubResponse());
+        assertTrue(getGroup1Device2Tcp().subPubResponse());
+        assertTrue(getGroup2Device1Tcp().subPubResponse());
+        assertTrue(getGroup2Device2Tcp().subPubResponse());
 
         // test publish right and wrong format data
-        assertTrue(publishDp(group1_device1_tcp, MODULE));
-        assertTrue(publishDp(group1_device2_tcp, MODULE));
-        assertTrue(publishDp(group2_device1_tcp, MODULE));
-        assertTrue(publishDp(group2_device2_tcp, MODULE));
+        assertTrue(publishDp(getGroup1Device1Tcp(), MODULE));
+        assertTrue(publishDp(getGroup1Device2Tcp(), MODULE));
+        assertTrue(publishDp(getGroup2Device1Tcp(), MODULE));
+        assertTrue(publishDp(getGroup2Device2Tcp(), MODULE));
 
-        assertTrue(pubWrongFormatDp(group1_device1_tcp, MODULE));
-        assertTrue(pubWrongFormatDp(group1_device2_tcp, MODULE));
-        assertTrue(pubWrongFormatDp(group2_device1_tcp, MODULE));
-        assertTrue(pubWrongFormatDp(group2_device2_tcp, MODULE));
+        assertTrue(pubWrongFormatDp(getGroup1Device1Tcp(), MODULE));
+        assertTrue(pubWrongFormatDp(getGroup1Device2Tcp(), MODULE));
+        assertTrue(pubWrongFormatDp(getGroup2Device1Tcp(), MODULE));
+        assertTrue(pubWrongFormatDp(getGroup2Device2Tcp(), MODULE));
 
         // test command subscribe
-        assertTrue(deviceSubCmd(group1_device1_tcp));
-        assertTrue(deviceSubCmd(group1_device2_tcp));
-        assertTrue(deviceSubCmd(group2_device1_tcp));
-        assertTrue(deviceSubCmd(group2_device2_tcp));
+        assertTrue(deviceSubCmd(getGroup1Device1Tcp()));
+        assertTrue(deviceSubCmd(getGroup1Device2Tcp()));
+        assertTrue(deviceSubCmd(getGroup2Device1Tcp()));
+        assertTrue(deviceSubCmd(getGroup2Device2Tcp()));
 
         // send a command from http api by the same group id and key
-        assertTrue(runCommandTest(group1_device1_tcp, group1_id, group1_key, "ipaddress", MODULE));
-        assertTrue(runCommandTest(group1_device2_tcp, group1_id, group1_key, "test2", MODULE));
-        assertTrue(runCommandTest(group2_device1_tcp, group2_id, group2_key, "test3", MODULE));
-        assertTrue(runCommandTest(group2_device2_tcp, group2_id, group2_key, "test4", MODULE));
+        assertTrue(runCommandTest(getGroup1Device1Tcp(), GROUP1_ID, GROUP1_KEY, "ipaddress", MODULE));
+        assertTrue(runCommandTest(getGroup1Device2Tcp(), GROUP1_ID, GROUP1_KEY, "test2", MODULE));
+        assertTrue(runCommandTest(getGroup2Device1Tcp(), GROUP2_ID, GROUP2_KEY, "test3", MODULE));
+        assertTrue(runCommandTest(getGroup2Device2Tcp(), GROUP2_ID, GROUP2_KEY, "test4", MODULE));
     }
 
     private void sslFunctionTests() {
         // use group1 key to get info of group1 device1 and device2, should be successful
-        assertNotNull(getDeviceInfo(group1_device1_ssl, group1_id, group1_key));
-        assertNotNull(getDeviceInfo(group1_device2_ssl, group1_id, group1_key));
+        assertNotNull(getDeviceInfo(getGroup1Device1Ssl(), GROUP1_ID, GROUP1_KEY));
+        assertNotNull(getDeviceInfo(getGroup1Device2Ssl(), GROUP1_ID, GROUP1_KEY));
 
         // use group2 key to get info of group2 device1 and device2, should be successful
-        assertNotNull(getDeviceInfo(group2_device1_ssl, group2_id, group2_key));
-        assertNotNull(getDeviceInfo(group2_device2_ssl, group2_id, group2_key));
+        assertNotNull(getDeviceInfo(getGroup2Device1Ssl(), GROUP2_ID, GROUP2_KEY));
+        assertNotNull(getDeviceInfo(getGroup2Device2Ssl(), GROUP2_ID, GROUP2_KEY));
 
         // use group1 key to get info of group2 device1 and device2, should be NULL
-        assertNull(getDeviceInfo(group1_device1_ssl, group2_id, group2_key));
-        assertNull(getDeviceInfo(group1_device2_ssl, group2_id, group2_key));
+        assertNull(getDeviceInfo(getGroup1Device1Ssl(), GROUP2_ID, GROUP2_KEY));
+        assertNull(getDeviceInfo(getGroup1Device2Ssl(), GROUP2_ID, GROUP2_KEY));
 
         // use group1 key to get info of group2 device1 and device2, should be NULL
-        assertNull(getDeviceInfo(group2_device1_ssl, group1_id, group1_key));
-        assertNull(getDeviceInfo(group2_device2_ssl, group1_id, group1_key));
+        assertNull(getDeviceInfo(getGroup2Device1Ssl(), GROUP1_ID, GROUP1_KEY));
+        assertNull(getDeviceInfo(getGroup2Device2Ssl(), GROUP1_ID, GROUP1_KEY));
 
         // subscribe publish accepted topic and rejected topic
-        assertTrue(group1_device1_ssl.subPubResponse());
-        assertTrue(group1_device2_ssl.subPubResponse());
-        assertTrue(group2_device1_ssl.subPubResponse());
-        assertTrue(group2_device2_ssl.subPubResponse());
+        assertTrue(getGroup1Device1Ssl().subPubResponse());
+        assertTrue(getGroup1Device2Ssl().subPubResponse());
+        assertTrue(getGroup2Device1Ssl().subPubResponse());
+        assertTrue(getGroup2Device2Ssl().subPubResponse());
 
         // test publish right and wrong format data
-        assertTrue(publishDp(group1_device1_ssl, MODULE));
-        assertTrue(publishDp(group1_device2_ssl, MODULE));
-        assertTrue(publishDp(group2_device1_ssl, MODULE));
-        assertTrue(publishDp(group2_device2_ssl, MODULE));
+        assertTrue(publishDp(getGroup1Device1Ssl(), MODULE));
+        assertTrue(publishDp(getGroup1Device2Ssl(), MODULE));
+        assertTrue(publishDp(getGroup2Device1Ssl(), MODULE));
+        assertTrue(publishDp(getGroup2Device2Ssl(), MODULE));
 
-        assertTrue(pubWrongFormatDp(group1_device1_ssl, MODULE));
-        assertTrue(pubWrongFormatDp(group1_device2_ssl, MODULE));
-        assertTrue(pubWrongFormatDp(group2_device1_ssl, MODULE));
-        assertTrue(pubWrongFormatDp(group2_device2_ssl, MODULE));
+        assertTrue(pubWrongFormatDp(getGroup1Device1Ssl(), MODULE));
+        assertTrue(pubWrongFormatDp(getGroup1Device2Ssl(), MODULE));
+        assertTrue(pubWrongFormatDp(getGroup2Device1Ssl(), MODULE));
+        assertTrue(pubWrongFormatDp(getGroup2Device2Ssl(), MODULE));
 
         // test command subscribe
-        assertTrue(deviceSubCmd(group1_device1_ssl));
-        assertTrue(deviceSubCmd(group1_device2_ssl));
-        assertTrue(deviceSubCmd(group2_device1_ssl));
-        assertTrue(deviceSubCmd(group2_device2_ssl));
+        assertTrue(deviceSubCmd(getGroup1Device1Ssl()));
+        assertTrue(deviceSubCmd(getGroup1Device2Ssl()));
+        assertTrue(deviceSubCmd(getGroup2Device1Ssl()));
+        assertTrue(deviceSubCmd(getGroup2Device2Ssl()));
 
         // send a command from http api by the same group id and key
-        assertTrue(runCommandTest(group1_device1_ssl, group1_id, group1_key, "ipaddress", MODULE));
-        assertTrue(runCommandTest(group1_device2_ssl, group1_id, group1_key, "test2", MODULE));
-        assertTrue(runCommandTest(group2_device1_ssl, group2_id, group2_key, "test3", MODULE));
-        assertTrue(runCommandTest(group2_device2_ssl, group2_id, group2_key, "test4", MODULE));
+        assertTrue(runCommandTest(getGroup1Device1Ssl(), GROUP1_ID, GROUP1_KEY, "ipaddress", MODULE));
+        assertTrue(runCommandTest(getGroup1Device2Ssl(), GROUP1_ID, GROUP1_KEY, "test2", MODULE));
+        assertTrue(runCommandTest(getGroup2Device1Ssl(), GROUP2_ID, GROUP2_KEY, "test3", MODULE));
+        assertTrue(runCommandTest(getGroup2Device2Ssl(), GROUP2_ID, GROUP2_KEY, "test4", MODULE));
     }
 }

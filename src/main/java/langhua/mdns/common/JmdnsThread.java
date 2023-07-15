@@ -25,14 +25,15 @@ import javax.jmdns.ServiceInfo;
 import javax.jmdns.impl.ServiceInfoImpl;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JmdnsThread extends Thread {
     private static final String MODULE = JmdnsThread.class.getName();
 
     private JmDNS jmdns;
 
-    protected boolean doomed;
+    private boolean doomed;
     private final long startTime;
 
     public JmdnsThread(ThreadGroup threadGroup, String name) {
@@ -43,6 +44,7 @@ public class JmdnsThread extends Thread {
         startTime = System.currentTimeMillis();
     }
 
+    @Override
     public void start() {
         try {
             InetAddress ia = MdnsUtils.getProperInetAddress();
@@ -65,6 +67,7 @@ public class JmdnsThread extends Thread {
         }
     }
 
+    @Override
     public void interrupt() {
         if (jmdns != null) {
             jmdns.unregisterAllServices();
@@ -74,6 +77,6 @@ public class JmdnsThread extends Thread {
                 Debug.logError(e, MODULE);
             }
         }
-        Debug.logInfo("JmdnsThread run for " + (System.currentTimeMillis() - startTime)/1000 + " seconds", MODULE);
+        Debug.logInfo("JmdnsThread run for " + (System.currentTimeMillis() - startTime) / 1000 + " seconds", MODULE);
     }
 }

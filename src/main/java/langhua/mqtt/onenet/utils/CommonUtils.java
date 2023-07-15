@@ -24,7 +24,6 @@ import org.apache.ofbiz.base.util.Debug;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Calendar;
 import java.util.Map;
 
 import javax.crypto.Mac;
@@ -53,12 +52,13 @@ public class CommonUtils {
             String hmacStr = "Hmac" + ONENET_MQTT_HASH_METHOD.toUpperCase();
             Mac hmac = Mac.getInstance(hmacStr);
             byte[] key = Base64.getDecoder().decode(deviceKey);
-            SecretKeySpec secret_key = new SecretKeySpec(key, hmacStr);
-            hmac.init(secret_key);
+            SecretKeySpec secretKey = new SecretKeySpec(key, hmacStr);
+            hmac.init(secretKey);
 
-            String hashString = URLEncoder.encode(Base64.getEncoder().encodeToString(hmac.doFinal(stringToSign.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
-            result = "version=" + ONENET_MQTT_VERSION + "&res=" + URLEncoder.encode(resource, StandardCharsets.UTF_8) + "&et=" + et + "&method=" + ONENET_MQTT_HASH_METHOD
-                   + "&sign=" + hashString;
+            String hashString = URLEncoder.encode(Base64.getEncoder().encodeToString(hmac.doFinal(stringToSign.getBytes(StandardCharsets.UTF_8))),
+                    StandardCharsets.UTF_8);
+            result = "version=" + ONENET_MQTT_VERSION + "&res=" + URLEncoder.encode(resource, StandardCharsets.UTF_8) + "&et=" + et + "&method="
+                    + ONENET_MQTT_HASH_METHOD + "&sign=" + hashString;
             Debug.logInfo("groupId[" + groupId + "] device[" + deviceName + "] deviceKey[" + deviceKey + "]:" + result, MODULE);
             return result;
         } catch (Exception e) {
@@ -66,7 +66,6 @@ public class CommonUtils {
         }
         return null;
     }
-    
 
     public static String generateApiToken(String groupId, String groupKey) {
         String result;
@@ -78,16 +77,17 @@ public class CommonUtils {
             long et = System.currentTimeMillis() / 1000 + DEFAULT_EXPIRE_IN_SECONDS;
             String stringToSign = et + "\n" + ONENET_MQTT_HASH_METHOD + "\n" + resource + "\n" + ONENET_MQTT_VERSION;
 
-            // 3. 
+            // 3. get Hmac
             String hmacStr = "Hmac" + ONENET_MQTT_HASH_METHOD.toUpperCase();
             Mac hmac = Mac.getInstance(hmacStr);
             byte[] key = Base64.getDecoder().decode(groupKey);
-            SecretKeySpec secret_key = new SecretKeySpec(key, hmacStr);
-            hmac.init(secret_key);
+            SecretKeySpec secretKey = new SecretKeySpec(key, hmacStr);
+            hmac.init(secretKey);
 
-            String hashString = URLEncoder.encode(Base64.getEncoder().encodeToString(hmac.doFinal(stringToSign.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
-            result = "version=" + ONENET_MQTT_VERSION + "&res=" + URLEncoder.encode(resource, StandardCharsets.UTF_8) + "&et=" + et + "&method=" + ONENET_MQTT_HASH_METHOD
-                   + "&sign=" + hashString;
+            String hashString = URLEncoder.encode(Base64.getEncoder().encodeToString(hmac.doFinal(stringToSign.getBytes(StandardCharsets.UTF_8))),
+                    StandardCharsets.UTF_8);
+            result = "version=" + ONENET_MQTT_VERSION + "&res=" + URLEncoder.encode(resource, StandardCharsets.UTF_8) + "&et=" + et + "&method="
+                    + ONENET_MQTT_HASH_METHOD + "&sign=" + hashString;
             Debug.logInfo("groupId[" + groupId + "] with key[" + groupKey + "], generated api token[" + result + "]", MODULE);
             return result;
         } catch (Exception e) {
@@ -175,7 +175,7 @@ public class CommonUtils {
     }
 
     private static StringBuffer generateDpContent(Map<String, String> dpMap) {
-        long now = System.currentTimeMillis()/1000;
+        long now = System.currentTimeMillis() / 1000;
         boolean isFirstKey = true;
         StringBuffer sb = new StringBuffer(8);
         for (String key : dpMap.keySet()) {

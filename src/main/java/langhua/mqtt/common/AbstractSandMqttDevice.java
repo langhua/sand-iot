@@ -19,7 +19,14 @@
 package langhua.mqtt.common;
 
 import org.apache.ofbiz.base.util.Debug;
-import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.sql.Timestamp;
 
@@ -27,7 +34,7 @@ public abstract class AbstractSandMqttDevice implements MqttCallback {
 
     private static final String MODULE = AbstractSandMqttDevice.class.getName();
 
-    protected MqttAsyncClient client;
+    private MqttAsyncClient client;
 
     private static final int BEGIN = 0;
     private static final int CONNECTED = 1;
@@ -44,13 +51,16 @@ public abstract class AbstractSandMqttDevice implements MqttCallback {
     private boolean donext = false;
 
     private MqttConnector con;
-    protected MqttConnectOptions conOpt;
+    private MqttConnectOptions conOpt;
 
     private static final int STATE_CHECK_INTERVAL_LONG = 10000;
     private static final int STATE_CHECK_INTERVAL_SHORT = 2000;
 
     public abstract void init();
 
+    /**
+     * Disconnect the mqtt client.
+     */
     public void disconnect() {
         try {
             client.disconnect(null, null);
@@ -59,8 +69,9 @@ public abstract class AbstractSandMqttDevice implements MqttCallback {
         }
     }
 
+    @Override
     public void connectionLost(Throwable cause) {
-        Debug.logError("[" + client.getClientId() +"] Connection Lost from " + client.getServerURI() + ": " + cause.getMessage(), MODULE);
+        Debug.logError("[" + client.getClientId() + "] Connection Lost from " + client.getServerURI() + ": " + cause.getMessage(), MODULE);
     }
 
     /**
@@ -80,41 +91,41 @@ public abstract class AbstractSandMqttDevice implements MqttCallback {
         state = BEGIN;
         while (state != FINISH) {
             switch (state) {
-                case BEGIN -> {
-                    // Connect using a non-blocking connect
-                    if (con == null) {
-                        con = new MqttConnector();
-                    }
-                    if (!isConnected()) {
-                        con.doConnect();
-                        state = CONNECTING;
-                    } else {
-                        state = CONNECTED;
-                    }
+            case BEGIN:
+                // Connect using a non-blocking connect
+                if (con == null) {
+                    con = new MqttConnector();
                 }
-                case CONNECTING -> {
-                    if (client.isConnected()) {
-                        state = CONNECTED;
-                    }
+                if (!isConnected()) {
+                    con.doConnect();
+                    state = CONNECTING;
+                } else {
+                    state = CONNECTED;
                 }
-                case CONNECTED -> {
-                    // Subscribe using a non-blocking subscribe
-                    Subscriber sub = new Subscriber();
-                    sub.doSubscribe(topicName, qos);
+                break;
+            case CONNECTING:
+                if (client.isConnected()) {
+                    state = CONNECTED;
                 }
-                case SUBSCRIBED, DISCONNECTED -> {
-                    // Block until Enter is pressed allowing messages to arrive
-                    state = FINISH;
-                    donext = true;
-                }
-                case DISCONNECT -> {
-                    Disconnector disc = new Disconnector();
-                    disc.doDisconnect();
-                }
-                case ERROR -> throw ex;
-                default -> {
-                    throw new IllegalStateException("Unexpected value: " + state);
-                }
+                break;
+            case CONNECTED:
+                // Subscribe using a non-blocking subscribe
+                Subscriber sub = new Subscriber();
+                sub.doSubscribe(topicName, qos);
+                break;
+            case SUBSCRIBED:
+            case DISCONNECTED:
+                state = FINISH;
+                donext = true;
+                break;
+            case DISCONNECT:
+                Disconnector disc = new Disconnector();
+                disc.doDisconnect();
+                break;
+            case ERROR:
+                throw ex;
+            default:
+                throw new IllegalStateException("Unexpected value: " + state);
             }
 
             if (BEGIN == state) {
@@ -141,44 +152,46 @@ public abstract class AbstractSandMqttDevice implements MqttCallback {
         state = BEGIN;
         while (state != FINISH) {
             switch (state) {
-                case BEGIN -> {
-                    // Connect using a non-blocking connect
-                    if (con == null) {
-                        con = new MqttConnector();
-                    }
-                    if (!client.isConnected()) {
-                        con.doConnect();
-                        state = CONNECTING;
-                    } else {
-                        state = CONNECTED;
-                    }
+            case BEGIN:
+                // Connect using a non-blocking connect
+                if (con == null) {
+                    con = new MqttConnector();
                 }
-                case CONNECTING -> {
-                    if (client.isConnected()) {
-                        state = CONNECTED;
-                    }
+                if (!client.isConnected()) {
+                    con.doConnect();
+                    state = CONNECTING;
+                } else {
+                    state = CONNECTED;
                 }
-                case CONNECTED -> {
-                    try {
-                        // Publish the message
-                        client.publish(topicName, message, null, null);
-                    } catch (MqttException e) {
-                        state = ERROR;
-                        donext = true;
-                        ex = e;
-                    }
-                    // Publish using a non-blocking publisher
-                    state = PUBLISHED;
+                break;
+            case CONNECTING:
+                if (client.isConnected()) {
+                    state = CONNECTED;
+                }
+                break;
+            case CONNECTED:
+                // Publish using a non-blocking publisher
+                try {
+                    // Publish the message
+                    client.publish(topicName, message, null, null);
+                } catch (MqttException e) {
+                    state = ERROR;
                     donext = true;
+                    ex = e;
                 }
-                case PUBLISHED, DISCONNECTED -> {
-                    state = FINISH;
-                    donext = true;
-                }
-                case DISCONNECT -> {
-                    new Disconnector().doDisconnect();
-                }
-                case ERROR -> throw ex;
+                state = PUBLISHED;
+                donext = true;
+                break;
+            case PUBLISHED:
+            case DISCONNECTED:
+                state = FINISH;
+                donext = true;
+                break;
+            case DISCONNECT:
+                new Disconnector().doDisconnect();
+                break;
+            case ERROR:
+                throw ex;
             }
 
             if (state == BEGIN) {
@@ -212,12 +225,22 @@ public abstract class AbstractSandMqttDevice implements MqttCallback {
     }
 
     /**
+     * Set mqtt connect options.
+     * @param conOpt
+     */
+    public void setConOpt(MqttConnectOptions conOpt) {
+        this.conOpt = conOpt;
+    }
+
+    /**
      * Disconnect in a non-blocking way and then sit back and wait to be notified
      * that the action has completed.
      */
     public class Disconnector {
+        /**
+         * Disconnect the mqtt client
+         */
         public void doDisconnect() {
-            // Disconnect the client
             Debug.logInfo("MQTT Disconnecting clientId[" + client.getClientId() + "] of [" + client.getServerURI() + "] ... ", MODULE);
 
             IMqttActionListener discListener = new IMqttActionListener() {
@@ -261,10 +284,12 @@ public abstract class AbstractSandMqttDevice implements MqttCallback {
         public MqttConnector() {
         }
 
+        /**
+         * Connect to the server
+         * Get a token and setup an asynchronous listener on the token which
+         * will be notified once the connect completes
+         */
         public void doConnect() {
-            // Connect to the server
-            // Get a token and setup an asynchronous listener on the token which
-            // will be notified once the connect completes
             Debug.logInfo("Connecting to " + client.getServerURI() + " with device name[" + client.getClientId() + "]", MODULE);
 
             IMqttActionListener conListener = new IMqttActionListener() {
@@ -319,33 +344,34 @@ public abstract class AbstractSandMqttDevice implements MqttCallback {
         state = BEGIN;
         while (state != FINISH) {
             switch (state) {
-                case BEGIN -> {
-                    // Connect using a non-blocking connect
-                    if (con == null) {
-                        con = new MqttConnector();
-                    }
-                    if (!client.isConnected()) {
-                        con.doConnect();
-                    } else {
-                        state = CONNECTED;
-                    }
+            case BEGIN:
+                // Connect using a non-blocking connect
+                if (con == null) {
+                    con = new MqttConnector();
                 }
-                case CONNECTED -> {
-                    // Publish using a non-blocking publisher
-                    Publisher pub = new Publisher();
-                    pub.doPublish(topicName, qos, payload);
+                if (!client.isConnected()) {
+                    con.doConnect();
+                } else {
+                    state = CONNECTED;
                 }
-                case PUBLISHED, DISCONNECTED -> {
-                    state = FINISH;
-                    donext = true;
-                }
-                case DISCONNECT -> {
-                    Disconnector disc = new Disconnector();
-                    disc.doDisconnect();
-                }
-                case ERROR -> throw ex;
+                break;
+            case CONNECTED:
+                // Publish using a non-blocking publisher
+                Publisher pub = new Publisher();
+                pub.doPublish(topicName, qos, payload);
+                break;
+            case PUBLISHED:
+            case DISCONNECTED:
+                state = FINISH;
+                donext = true;
+                break;
+            case DISCONNECT:
+                Disconnector disc = new Disconnector();
+                disc.doDisconnect();
+                break;
+            case ERROR:
+                throw ex;
             }
-
             if (state == BEGIN) {
                 waitForStateChange(STATE_CHECK_INTERVAL_LONG);
             } else {
@@ -359,6 +385,13 @@ public abstract class AbstractSandMqttDevice implements MqttCallback {
      * the action has completed.
      */
     public class Publisher {
+        /**
+         * Do the publishing.
+         *
+         * @param topicName
+         * @param qos
+         * @param payload
+         */
         public void doPublish(String topicName, int qos, byte[] payload) {
             // Send / publish a message to the server
             // Get a token and setup an asynchronous listener on the token which
@@ -409,11 +442,18 @@ public abstract class AbstractSandMqttDevice implements MqttCallback {
      * that the action has completed.
      */
     public class Subscriber {
+        /**
+         * Do the subscription.
+         *
+         * @param topicName
+         * @param qos
+         */
         public void doSubscribe(String topicName, int qos) {
             // Make a subscription
             // Get a token and setup an asynchronous listener on the token which
             // will be notified once the subscription is in place.
-            Debug.logInfo("[" + client.getClientId() + "] of server[" + client.getServerURI() + "] Subscribing to topic \"" + topicName + "\" qos " + qos, MODULE);
+            Debug.logInfo("[" + client.getClientId() + "] of server[" + client.getServerURI() + "] Subscribing to topic \""
+                    + topicName + "\" qos " + qos, MODULE);
 
             IMqttActionListener subListener = new IMqttActionListener() {
                 public void onSuccess(IMqttToken asyncActionToken) {
@@ -447,6 +487,9 @@ public abstract class AbstractSandMqttDevice implements MqttCallback {
         }
     }
 
+    /**
+     * Check whether this mqtt client is connected to server.
+     */
     public boolean isConnected() {
         if (client == null) {
             return false;
@@ -454,6 +497,7 @@ public abstract class AbstractSandMqttDevice implements MqttCallback {
         return client.isConnected();
     }
 
+    @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
         try {
             Debug.logInfo(new String(token.getMessage().getPayload()), MODULE);
@@ -461,5 +505,19 @@ public abstract class AbstractSandMqttDevice implements MqttCallback {
             Debug.logError(e.getMessage(), MODULE);
         }
     }
-}
 
+    /**
+     * Get the mqtt async client.
+     */
+    protected MqttAsyncClient getClient() {
+        return client;
+    }
+
+    /**
+     * Set the mqtt async client.
+     * @param client
+     */
+    protected void setClient(MqttAsyncClient client) {
+        this.client = client;
+    }
+}

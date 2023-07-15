@@ -29,7 +29,12 @@ import com.google.gson.Gson;
 
 import com.google.gson.JsonSyntaxException;
 import langhua.mqtt.onenet.utils.CommonUtils;
-import okhttp3.*;
+import okhttp3.ConnectionPool;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.UtilProperties;
 
@@ -44,15 +49,18 @@ public class OnenetHttpApi {
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     public static final MediaType PLAIN = MediaType.parse("application/plain; charset=utf-8");
-    
+
     private final String token;
-    
+
     public OnenetHttpApi(String groupId, String groupKey) {
         this.token = CommonUtils.generateApiToken(groupId, groupKey);
     }
 
+    /**
+     * Get http api token.
+     */
     public String getApiToken() {
-        return token;
+        return this.token;
     }
 
     @SuppressWarnings("rawtypes")
@@ -106,14 +114,15 @@ public class OnenetHttpApi {
                                      .post(body)
                                      .build();
         try (Response response = client.newCall(request).execute()) {
-            if (response.body() != null)
+            if (response.body() != null) {
                 return response.body().string();
+            }
         } catch (IOException e) {
             Debug.logError(e, MODULE);
         }
         return null;
     }
-    
+
     @SuppressWarnings("unchecked")
     public static boolean isSuccessResponse(String response) {
         if (response == null) return false;
@@ -121,21 +130,25 @@ public class OnenetHttpApi {
         HashMap<String, Object> result = gson.fromJson(response, HashMap.class);
         return result != null && !result.isEmpty() && "success".equals(result.get("error"));
     }
-    
+
     @SuppressWarnings("unchecked")
     public static Map<String, ?> parseSuccessResponse(String response) {
-        if (response == null)
+        if (response == null) {
             return null;
+        }
         Gson gson = new Gson();
         HashMap<String, ?> result = gson.fromJson(response, HashMap.class);
-        if (result == null || result.isEmpty() || !"success".equals(result.get("error")))
+        if (result == null || result.isEmpty() || !"success".equals(result.get("error"))) {
             return null;
+        }
         Map<String, ?> data = (Map<String, ?>) result.get("data");
-        if (data == null || data.isEmpty())
+        if (data == null || data.isEmpty()) {
             return null;
+        }
         String cmdResponse = (String) data.get("cmd_resp");
-        if (cmdResponse == null)
+        if (cmdResponse == null) {
             return null;
+        }
         cmdResponse = new String(Base64.getDecoder().decode(cmdResponse), StandardCharsets.UTF_8);
         try {
             result = gson.fromJson(cmdResponse, HashMap.class);

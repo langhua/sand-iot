@@ -26,7 +26,11 @@ import langhua.mqtt.onenet.utils.CommonUtils;
 import langhua.mqtt.onenet.utils.IpAddressUtils;
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.UtilProperties;
-import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
+import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
@@ -36,27 +40,27 @@ public class OnenetMqttDevice extends AbstractSandMqttDevice {
     public static final String ONENET_SERVER_TCP_SCHEMA = UtilProperties.getPropertyValue("mqtt", "mqtt.onenet.server.tcp.schema");
     protected static final String ONENET_SERVER_TCP_IP = UtilProperties.getPropertyValue("mqtt", "mqtt.onenet.server.tcp.ip");
     protected static final String ONENET_SERVER_TCP_PORT = UtilProperties.getPropertyValue("mqtt", "mqtt.onenet.server.tcp.port");
-    protected String brokerUrl;
-    protected String groupId;
-    protected String groupName;
-    protected String password;
-    protected String deviceName;
-    protected String deviceId;
-    protected String deviceKey;
+    private String brokerUrl;
+    private String groupId;
+    private String groupName;
+    private String password;
+    private String deviceName;
+    private String deviceId;
+    private String deviceKey;
 
     // see https://open.iot.10086.cn/doc/mqtt/book/device-develop/protocol.html
-    protected boolean clean = true;
+    private boolean clean = true;
 
-    protected final MqttClientPersistence dataStore;
+    private final MqttClientPersistence dataStore;
 
     private final String ofbizHome = System.getProperty("ofbiz.home");
-    protected MqttDefaultFilePersistence fsDataStore = new MqttDefaultFilePersistence((ofbizHome == null? "" : (ofbizHome + File.separatorChar)) +
-            "runtime" + File.separatorChar + "tempfiles" + File.separatorChar + "mqtt");
-     protected MemoryPersistence memDataStore = new MemoryPersistence();
+    private MqttDefaultFilePersistence fsDataStore = new MqttDefaultFilePersistence((ofbizHome == null ? "" : (ofbizHome + File.separatorChar))
+            + "runtime" + File.separatorChar + "tempfiles" + File.separatorChar + "mqtt");
+    private MemoryPersistence memDataStore = new MemoryPersistence();
 
     /**
      * Constructs an instance of the OneNET client wrapper
-     * 
+     *
      * @param groupName    group name
      * @param groupId      group id
      * @param deviceName   device name
@@ -73,13 +77,14 @@ public class OnenetMqttDevice extends AbstractSandMqttDevice {
         this.dataStore = UtilProperties.getPropertyAsBoolean("mqtt", "mqtt.onenet.client.usefsdatastore", true) ? fsDataStore : memDataStore;
     }
 
+    @Override
     public void init() {
         brokerUrl = ONENET_SERVER_TCP_SCHEMA + ONENET_SERVER_TCP_IP + ":" + ONENET_SERVER_TCP_PORT;
 
         try {
             // Construct the object that contains connection parameters
             // such as cleanSession and LWT
-            conOpt = new MqttConnectOptions();
+            MqttConnectOptions conOpt = new MqttConnectOptions();
             conOpt.setCleanSession(true);
             if (password != null) {
                 conOpt.setPassword(password.toCharArray());
@@ -91,21 +96,24 @@ public class OnenetMqttDevice extends AbstractSandMqttDevice {
             conOpt.setConnectionTimeout(30);
             conOpt.setKeepAliveInterval(10);
             conOpt.setAutomaticReconnect(true);
+            setConOpt(conOpt);
 
             // Construct the MqttClient instance
-            client = new MqttAsyncClient(brokerUrl, deviceName, dataStore);
+            MqttAsyncClient client = new MqttAsyncClient(brokerUrl, deviceName, dataStore);
 
             // Set this wrapper as the callback handler
             client.setCallback(this);
+            setClient(client);
         } catch (MqttException e) {
             Debug.logError("Unable to set up client: " + e.toString(), MODULE);
-            System.exit(1);
+            setClient(null);
         }
     }
 
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        Debug.logInfo("[" + getGroupId() + "/" + getDeviceName() +"] Message Arrived: [" + topic + "] " + new String(message.getPayload()), MODULE);
+        Debug.logInfo("[" + getGroupId() + "/" + getDeviceName() + "] Message Arrived: [" + topic + "] "
+                + new String(message.getPayload()), MODULE);
         if (topic.startsWith(CommonUtils.getDeviceTopicPrefix(getGroupId(), getDeviceName()))) {
             String cmdId = topic.substring(topic.lastIndexOf('/') + 1);
             Debug.logInfo("Command id: " + cmdId, MODULE);
@@ -130,38 +138,49 @@ public class OnenetMqttDevice extends AbstractSandMqttDevice {
         }
     }
 
-    public String getDeviceKey() {
-        return this.deviceKey;
-    }
-
+    /**
+     * Get group name of this device.
+     */
     public String getGroupName() {
         return this.groupName;
     }
 
+    /**
+     * Get password of this device.
+     */
     public String getPassword() {
         return this.password;
     }
 
+    /**
+     * Get group id of this device.
+     */
     public String getGroupId() {
         return this.groupId;
     }
 
+    /**
+     * Get name of this device.
+     */
     public String getDeviceName() {
         return this.deviceName;
     }
 
-    public void setDeviceName(String deviceName) {
-        this.deviceName = deviceName;
-    }
-
+    /**
+     * Get id of this device.
+     */
     public String getDeviceId() {
         return this.deviceId;
     }
 
+    /**
+     * Set id of this device.
+     */
     public void setDeviceId(String deviceId) {
         this.deviceId = deviceId;
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer(8);
         sb.append("group id: ");
@@ -174,7 +193,7 @@ public class OnenetMqttDevice extends AbstractSandMqttDevice {
         sb.append(getPassword());
         return sb.toString();
     }
-    
+
     /**
      * Subscribe the device its own command request topic.
      */
@@ -184,7 +203,7 @@ public class OnenetMqttDevice extends AbstractSandMqttDevice {
 
     /**
      * Subscribe a device's command request topic. Return  true if success, else false
-     * 
+     *
      * @param groupId
      * @param deviceName
      */
@@ -201,7 +220,7 @@ public class OnenetMqttDevice extends AbstractSandMqttDevice {
 
     /**
      * Subscribe the device its own command response topic.
-     * 
+     *
      */
     public boolean subCmdResponse() {
         return subCmdResponse(this);
@@ -223,10 +242,21 @@ public class OnenetMqttDevice extends AbstractSandMqttDevice {
         return true;
     }
 
+    /**
+     * Subscribe publish response for this device.
+     *
+     * @return
+     */
     public boolean subPubResponse() {
         return subPubResponse(this);
     }
 
+    /**
+     * Subscribe publish response for the device.
+     *
+     * @param device
+     * @return
+     */
     public boolean subPubResponse(OnenetMqttDevice device) {
         String acceptedTopic = CommonUtils.getDataPubAcceptedTopic(device.getGroupId(), device.getDeviceName());
         String rejectedTopic = CommonUtils.getDataPubRejectedTopic(device.getGroupId(), device.getDeviceName());
@@ -245,4 +275,31 @@ public class OnenetMqttDevice extends AbstractSandMqttDevice {
         return true;
     }
 
+    /**
+     * Get data store to persist mqtt client.
+     */
+    protected MqttClientPersistence getDataStore() {
+        return this.dataStore;
+    }
+
+    /**
+     * Get whether to use clean connection option for this device.
+     */
+    protected boolean getClean() {
+        return this.clean;
+    }
+
+    /**
+     * Get broker url of this device.
+     */
+    protected String getBrokerUrl() {
+        return this.brokerUrl;
+    }
+
+    /**
+     * Set broker url of this device.
+     */
+    protected void setBrokerUrl(String brokerUrl) {
+        this.brokerUrl = brokerUrl;
+    }
 }

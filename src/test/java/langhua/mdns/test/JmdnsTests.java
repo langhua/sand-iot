@@ -32,7 +32,7 @@ import java.net.InetAddress;
 public class JmdnsTests extends TestCase {
     private static final String MODULE = JmdnsTests.class.getName();
 
-    protected JmdnsThread jmdnsThread;
+    private JmdnsThread jmdnsThread;
 
     private static final String JMDNS_THREAD_NAME = "sandflower-jmdns-thread";
 
@@ -43,6 +43,11 @@ public class JmdnsTests extends TestCase {
         return new TestSuite(JmdnsTests.class);
     }
 
+    /**
+     * Test entrance.
+     *
+     * @throws Exception
+     */
     public void testAll() throws Exception {
         initialJmdnsThread();
         Thread.sleep(3000);
@@ -57,7 +62,7 @@ public class JmdnsTests extends TestCase {
         JmmDNS registry = JmmDNS.Factory.getInstance();
         Thread.sleep(10000);
         ServiceInfo[] httpSiArray = registry.list("_http._tcp.local.");
-        for(ServiceInfo si : httpSiArray) {
+        for (ServiceInfo si : httpSiArray) {
             if (si.getInetAddresses().length > 0) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("[");
@@ -80,6 +85,9 @@ public class JmdnsTests extends TestCase {
         registry.close();
     }
 
+    /**
+     * Initial a JmdnsThread.
+     */
     protected void initialJmdnsThread() {
         Debug.logInfo("Initial Jmdns thread ...", MODULE);
         ThreadGroup threadGroup = Thread.currentThread().getThreadGroup();
