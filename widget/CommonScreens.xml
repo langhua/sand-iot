@@ -24,16 +24,14 @@ under the License.
     <screen name="main-decorator">
         <section>
             <actions>
-                <set field="activeApp" value="pricat" global="true"/>
-                <property-map resource="PricatUiLabels" map-name="uiLabelMap" global="true"/>
+                <set field="activeApp" value="iot" global="true"/>
+                <property-map resource="IotUiLabels" map-name="uiLabelMap" global="true"/>
                 <property-map resource="CommonUiLabels" map-name="uiLabelMap" global="true"/>
 
-                <set field="layoutSettings.companyName" from-field="uiLabelMap.PriCatCompanyName" global="true"/>
-                <set field="applicationMenuName" value="PriCatAppBar" global="true"/>
-                <set field="applicationMenuLocation" value="component://pricat/widget/PriCatMenus.xml" global="true"/>
-                <set field="applicationTitle" from-field="uiLabelMap.PriCatApplication" global="true"/>
+                <set field="applicationTitle" from-field="uiLabelMap.IotApplication" global="true"/>
                 <set field="helpAnchor" from-field="helpAnchor" default-value="_apache_ofbiz_plugins"/>
                 <set field="layoutSettings.styleSheets[]" value="/pricat/includes/pricat.css" global="true"/>
+                <set field="layoutSettings.companyName" from-field="uiLabelMap.IotApplication" global="true"/>
             </actions>
             <widgets>
                 <include-screen name="ApplicationDecorator" location="component://commonext/widget/CommonScreens.xml"/>
@@ -44,18 +42,14 @@ under the License.
     <screen name="viewMdns">
         <section>
             <actions>
-                <property-map resource="PricatUiLabels" map-name="uiLabelMap" global="true"/>
+                <property-map resource="IotUiLabels" map-name="uiLabelMap" global="true"/>
                 <property-map resource="CommonUiLabels" map-name="uiLabelMap" global="true"/>
-                <set field="titleProperty" value="ViewExcelImportHistory"/>
+                <set field="titleProperty" value="IotApplication"/>
 
                 <script location="component://sand-iot/groovyScripts/iot/mdns.groovy"/>
             </actions>
             <widgets>
-                <decorator-screen name="main-decorator">
-                    <decorator-section name="body">
-                        <platform-specific><html><html-template location="component://sand-iot/template/iot/viewMdns.ftl"/></html></platform-specific>
-                    </decorator-section>
-                </decorator-screen>
+                <platform-specific><html><html-template location="component://sand-iot/template/iot/viewMdns.ftl"/></html></platform-specific>
             </widgets>
         </section>
     </screen>

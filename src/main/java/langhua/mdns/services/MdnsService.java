@@ -22,13 +22,16 @@ import org.apache.ofbiz.base.util.Debug;
 
 import javax.jmdns.JmmDNS;
 import javax.jmdns.ServiceEvent;
+import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 import javax.jmdns.ServiceTypeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class MdnsService implements ServiceTypeListener, ServiceListener {
     private static final String MODULE = MdnsService.class.getName();
@@ -47,8 +50,8 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
     }
 
     @Override
-    public void serviceTypeAdded(ServiceEvent event) {
-        String type = event.getType();
+    public synchronized void serviceTypeAdded(ServiceEvent event) {
+        String type = event.getType().trim();
         if (!serviceTypes.keySet().contains(type)) {
             Debug.logVerbose("Mdns Service Type added   : " + event.getType(), MODULE);
             serviceTypes.put(type, new ArrayList<>());
@@ -57,19 +60,21 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
     }
 
     @Override
-    public void subTypeForServiceTypeAdded(ServiceEvent event) {
+    public synchronized void subTypeForServiceTypeAdded(ServiceEvent event) {
         Debug.logInfo("Jmdns SUBTYPE added: " + event.getType(), MODULE);
     }
 
     @Override
-    public void serviceAdded(ServiceEvent event) {
-        String type = event.getType();
-        final String name = event.getName();
+    public synchronized void serviceAdded(ServiceEvent event) {
+        String type = event.getType().trim();
+        final String name = event.getName().trim();
         Debug.logInfo("Mdns Service added   : " + event.getInfo(), MODULE);
         List<String> names;
         if (serviceTypes.containsKey(type)) {
             names = serviceTypes.get(type);
-            names.add(name);
+            if (!names.contains(name)) {
+                names.add(name);
+            }
         } else {
             names = new ArrayList<>();
             names.add(name);
@@ -78,9 +83,9 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
     }
 
     @Override
-    public void serviceRemoved(ServiceEvent event) {
+    public synchronized void serviceRemoved(ServiceEvent event) {
         String type = event.getType();
-        final String name = event.getName();
+        final String name = event.getName().trim();
         Debug.logInfo("Mdns Service removed : " + name + "." + event.getType(), MODULE);
         if (serviceTypes.containsKey(type)) {
             List<String> names = serviceTypes.get(type);
@@ -89,8 +94,8 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
     }
 
     @Override
-    public void serviceResolved(ServiceEvent event) {
-        Debug.logInfo("Mdns Service resolved: " + event.getInfo(), MODULE);
+    public synchronized void serviceResolved(ServiceEvent event) {
+        Debug.logVerbose("Mdns Service resolved: " + event.getInfo(), MODULE);
     }
 
     /**
@@ -102,9 +107,13 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
         return serviceTypes;
     }
 
-//    public ServiceInfo getServiceInfo(String type, String name) {
-//        return
-//    }
+    public ServiceInfo getServiceInfo(String type, String name) {
+        ServiceInfo[] infos = registry.getServiceInfos(type, name);
+        if (infos != null && infos.length > 0) {
+            return infos[0];
+        }
+        return null;
+    }
 
     /**
      * Close mdns service registry.

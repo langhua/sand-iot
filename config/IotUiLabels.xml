@@ -17,19 +17,21 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
-
-<site-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns="http://ofbiz.apache.org/Site-Conf" xsi:schemaLocation="http://ofbiz.apache.org/Site-Conf http://ofbiz.apache.org/dtds/site-conf.xsd">
-    <include location="component://common/webcommon/WEB-INF/common-controller.xml"/>
-<!--    <include location="component://common/webcommon/WEB-INF/portal-controller.xml"/>-->
-
-    <description>Sand-Iot</description>
-
-    <!-- define -->
-    <request-map uri="main">
-        <security https="false" auth="false"/>
-        <response name="success" type="view" value="main"/>
-    </request-map>
-
-    <view-map name="main" type="screen" page="component://sand-iot/widget/CommonScreens.xml#viewMdns"/>
-</site-conf>
+<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <property key="IotApplication">
+        <value xml:lang="en">Sand Iot</value>
+        <value xml:lang="zh">Sand物联网</value>
+    </property>
+    <property key="IotMdnsServiceType">
+        <value xml:lang="en">Type</value>
+        <value xml:lang="zh">类型</value>
+    </property>
+    <property key="IotMdnsServiceName">
+        <value xml:lang="en">Name</value>
+        <value xml:lang="zh">名称</value>
+    </property>
+    <property key="IotMdnsServiceInfo">
+        <value xml:lang="en">Details</value>
+        <value xml:lang="zh">详细</value>
+    </property>
+</resource>
