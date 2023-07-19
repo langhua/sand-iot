@@ -38,33 +38,33 @@ under the License.
                     <td>
                         <#if serviceInfo?has_content>
                             <#if serviceInfo.instance?has_content>
-                                Instance: ${serviceInfo.instance!}<br>
+                                ${uiLabelMap.IotMdnsInstance}: ${serviceInfo.instance!}<br>
                             </#if>
                             <#if serviceInfo.subtype?has_content>
-                                Subtype: ${serviceInfo.subtype!}<br>
+                                ${uiLabelMap.IotMdnsSubtype}: ${serviceInfo.subtype!}<br>
                             </#if>
                             <#if serviceInfo.hostAddresses?has_content && serviceInfo.hostAddresses?size gt 1>
-                                HostAddresses:<br>
+                                ${uiLabelMap.IotMdnsHostAddresses}:<br>
                                 <#list 0..(serviceInfo.hostAddresses?size - 1) as j>
                                 &nbsp;&nbsp;&nbsp;&nbsp;${serviceInfo.hostAddresses[j]!}<br>
                                 </#list>
                             <#elseif serviceInfo.hostAddress?has_content>
-                                HostAddress: ${serviceInfo.hostAddress!}<br>
+                                ${uiLabelMap.IotMdnsHostAddress}: ${serviceInfo.hostAddress!}<br>
                             </#if>
                             <#if serviceInfo.port?has_content>
-                                Port: ${serviceInfo.port!}<br>
+                                ${uiLabelMap.IotMdnsPort}: ${serviceInfo.port!}<br>
                             </#if>
                             <#if serviceInfo.URLs?has_content && serviceInfo.URLs?size gt 1>
-                                URLs:<br>
+                                ${uiLabelMap.IotMdnsURLs}:<br>
                                 <#list 0..(serviceInfo.URLs?size - 1) as j>
                                 &nbsp;&nbsp;&nbsp;&nbsp;${serviceInfo.URLs[j]!}<br>
                                 </#list>
                             </#if>
                             <#if serviceInfo.textString?has_content>
-                                Text: ${serviceInfo.textString!}<br>
+                                ${uiLabelMap.IotMdnsText}: ${serviceInfo.textString!}<br>
                             </#if>
                             <#if serviceInfo.propertyNames?has_content && serviceInfo.propertyNames?size gt 1>
-                                Properties:<br>
+                                ${uiLabelMap.IotMdnsProperties}:<br>
                                 <#list serviceInfo.propertyNames as propertyName>
                                 &nbsp;&nbsp;&nbsp;&nbsp;${propertyName!}: ${serviceInfo.getPropertyString(propertyName)!}<br>
                                 </#list>

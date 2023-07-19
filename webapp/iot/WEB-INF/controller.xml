@@ -21,13 +21,12 @@ under the License.
 <site-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns="http://ofbiz.apache.org/Site-Conf" xsi:schemaLocation="http://ofbiz.apache.org/Site-Conf http://ofbiz.apache.org/dtds/site-conf.xsd">
     <include location="component://common/webcommon/WEB-INF/common-controller.xml"/>
-<!--    <include location="component://common/webcommon/WEB-INF/portal-controller.xml"/>-->
 
     <description>Sand-Iot</description>
 
     <!-- define -->
     <request-map uri="main">
-        <security https="false" auth="false"/>
+        <security https="true" auth="true"/>
         <response name="success" type="view" value="main"/>
     </request-map>
 

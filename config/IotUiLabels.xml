@@ -34,4 +34,36 @@ under the License.
         <value xml:lang="en">Details</value>
         <value xml:lang="zh">详细</value>
     </property>
+    <property key="IotMdnsInstance">
+        <value xml:lang="en">Instance</value>
+        <value xml:lang="zh">实例</value>
+    </property>
+    <property key="IotMdnsSubtype">
+        <value xml:lang="en">Subtype</value>
+        <value xml:lang="zh">子类型</value>
+    </property>
+    <property key="IotMdnsHostAddresses">
+        <value xml:lang="en">Host addresses</value>
+        <value xml:lang="zh">主机地址</value>
+    </property>
+    <property key="IotMdnsHostAddress">
+        <value xml:lang="en">Host address</value>
+        <value xml:lang="zh">主机地址</value>
+    </property>
+    <property key="IotMdnsPort">
+        <value xml:lang="en">Port</value>
+        <value xml:lang="zh">端口</value>
+    </property>
+    <property key="IotMdnsURLs">
+        <value xml:lang="en">URLs</value>
+        <value xml:lang="zh">网址</value>
+    </property>
+    <property key="IotMdnsText">
+        <value xml:lang="en">Text</value>
+        <value xml:lang="zh">文本</value>
+    </property>
+    <property key="IotMdnsProperties">
+        <value xml:lang="en">Properties</value>
+        <value xml:lang="zh">属性</value>
+    </property>
 </resource>
