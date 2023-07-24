@@ -78,12 +78,3 @@ under the License.
         </#if>
     </tbody>
 </table>
-<script type="application/javascript">
-    function viewExcelImportLog(sequenceNum) {
-        document.location = "<@ofbizUrl>viewExcelImportLog</@ofbizUrl>?sequenceNum=" + sequenceNum;
-    }
-
-    function downloadCommentedExcel(sequenceNum) {
-        document.location = "<@ofbizUrl>downloadCommentedExcel</@ofbizUrl>?sequenceNum=" + sequenceNum;
-    }
-</script>

@@ -16,6 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+plugins.apply("com.github.node-gradle.node")
+
 dependencies {
     pluginLibsCompile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5',
                       'com.google.code.gson:gson:2.10.1',
@@ -23,3 +25,10 @@ dependencies {
                       'org.jmdns:jmdns:3.5.8',
                       'org.slf4j:slf4j-simple:2.0.1'
 }
+
+task mdnsDist(type: NpmTask) {
+    args = ['run', 'build']
+    workingDir = file(rootProject.pluginsDir + '/sand-iot/vuejs/mdns')
+}
+
+rootProject.classes.dependsOn(mdnsDist)
