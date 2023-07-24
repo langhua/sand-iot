@@ -27,8 +27,13 @@ dependencies {
 }
 
 task mdnsDist(type: NpmTask) {
-    args = ['run', 'build']
-    workingDir = file(rootProject.pluginsDir + '/sand-iot/vuejs/mdns')
+    args = ['run', 'build', '--emptyOutDir']
+
+    String workingDirPath = rootProject.pluginsDir + '/sand-iot/vuejs/mdns'
+    if (rootProject.os.contains('windows')) {
+        workingDirPath = workingDirPath.replaceAll('\\\\', '/')
+    }
+    workingDir = file(workingDirPath)
 }
 
 rootProject.classes.dependsOn(mdnsDist)

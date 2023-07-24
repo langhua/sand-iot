@@ -11,10 +11,11 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
+    },
+    preserveSymlinks: true
   },
   base: './',
   build: {
-    outDir: "D:/git/sand-iot/webapp/iot/mdns"
+    outDir: "../../webapp/iot/mdns"
   }
 })
