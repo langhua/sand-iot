@@ -26,3 +26,14 @@ Jmdns Browser是jmdns源码中自带的，基于Java Swing实现的。缺省情�
 
 下图是在IDEA中配置运行Jmdns Browser：
 ![jmdns-browser-exec](./images/jmdns-browser-exec.png)
+
+### Vite-Vue3实现mdns browser
+Vite-Vue3代码在vuejs/mdns目录下，推荐在VSCode中打开，进行开发和调试。
+
+开发过程中遇到的问题，主要是因为sand-iot文件夹是软连接引起的，因而配置上需要注意的地方，有两点：
+1. 在vite.config.ts中，配置preserveSymlinks: true，否则vite编译时，会报错。
+
+2. 在build.gradle中，要配置workingDir为实际目录，而不是软连接目录，才能编译出正确的vue执行代码：
+```groovy
+workingDir = file(workingDirPath).toPath().toRealPath().toFile()
+```
