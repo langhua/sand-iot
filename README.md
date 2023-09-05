@@ -1,12 +1,18 @@
 # sand-iot
 
-sand-iot是SandFlower的组成部分，部署在ofbiz-framework的plugins目录下运行。sand-iot提供三个功能：
+sand-iot是SandFlower的组成部分，部署在ofbiz-framework的plugins目录下运行。sand-iot提供四个功能：
 1. 令OFBiz成为一个MQTT设备，可以接收和执行命令，发布数据
 2. 令OFBiz可以向其它MQTT设备发送命令
 3. 令家庭局域网设备，通过mdns的网址访问，支持的网址包括：
-   1. sandflower*._http._tcp.local.
-   2. sandflower*._https._tcp.local.
+   sandflower._http._tcp.local.
+4. 浏览mdns的页面(http://sandflower/iot/mdns/)：
+   ![sand-iot-mdns-browser](docs/zh/images/sand-iot-mdns-browser.png)
+   详情页面：
+   ![sand-iot-mdns-details](docs/zh/images/sand-iot-mdns-details.png)
+   可以在Home Assistant中添加网页卡片，如下图所示：
+   ![sand-iot-mdns-ha](docs/zh/images/sand-iot-mdns-ha.png)
 
+### 支持的MQTT设备
 支持的场景包括：
 1. [Rovem](https://github.com/langhua/flower-esp8266/tree/master/docs/zh/retail/rovem)
 
