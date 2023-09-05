@@ -49,7 +49,7 @@ under the License.
         </init-param>
         <init-param>
             <param-name>redirectPath</param-name>
-            <param-value>/control/main</param-value>
+            <param-value>/mdns</param-value>
         </init-param>
     </filter>
     <filter>
@@ -57,12 +57,21 @@ under the License.
         <filter-name>ContextFilter</filter-name>
         <filter-class>org.apache.ofbiz.webapp.control.ContextFilter</filter-class>
     </filter>
+    <filter>
+        <display-name>MdnsContextFilter</display-name>
+        <filter-name>MdnsContextFilter</filter-name>
+        <filter-class>langhua.iot.webapp.MdnsContextFilter</filter-class>
+    </filter>
     <filter-mapping>
         <filter-name>ControlFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
     <filter-mapping>
         <filter-name>ContextFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>MdnsContextFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 

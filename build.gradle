@@ -28,12 +28,13 @@ dependencies {
 
 task mdnsDist(type: NpmTask) {
     args = ['run', 'build', '--emptyOutDir']
-
+    // on workingDir, see https://github.com/node-gradle/gradle-node-plugin/blob/master/docs/faq.md
     String workingDirPath = rootProject.pluginsDir + '/sand-iot/vuejs/mdns'
     if (rootProject.os.contains('windows')) {
         workingDirPath = workingDirPath.replaceAll('\\\\', '/')
     }
-    workingDir = file(workingDirPath)
+    // use real path to avoid problems with symlinks
+    workingDir = file(workingDirPath).toPath().toRealPath().toFile()
 }
 
 rootProject.classes.dependsOn(mdnsDist)

@@ -24,11 +24,25 @@ under the License.
 
     <description>Sand-Iot</description>
 
-    <!-- define -->
-    <request-map uri="main">
-        <security https="true" auth="true"/>
-        <response name="success" type="view" value="main"/>
+    <request-map uri="getMdnsTypes" method="post">
+        <security https="false" auth="false"/>
+        <event type="groovy" path="component://sand-iot/groovyScripts/iot/getMdnsTypes.groovy"/>
+        <response name="success" type="request" value="json"/>
+        <response name="error" type="request" value="json"/>
     </request-map>
 
-    <view-map name="main" type="screen" page="component://sand-iot/widget/CommonScreens.xml#viewMdns"/>
+    <request-map uri="getMdnsDetails" method="post">
+        <security https="false" auth="false"/>
+        <event type="groovy" path="component://sand-iot/groovyScripts/iot/getMdnsDetails.groovy"/>
+        <response name="success" type="request" value="json"/>
+        <response name="error" type="request" value="json"/>
+    </request-map>
+
+    <request-map uri="json">
+        <security direct-request="false"/>
+        <event type="java" path="langhua.iot.webapp.CommonEvents" invoke="jsonResponse"/>
+        <response name="success" type="none"/>
+        <response name="error" type="none"/>
+    </request-map>
+
 </site-conf>

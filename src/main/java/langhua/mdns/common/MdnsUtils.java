@@ -18,15 +18,19 @@
  *******************************************************************************/
 package langhua.mdns.common;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.UtilProperties;
 
-import java.net.InetAddress;
+import java.io.UnsupportedEncodingException;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,8 +43,6 @@ public class MdnsUtils {
     private static final String MODULE = MdnsUtils.class.getName();
 
     public static final String MDNS_HOST_NAME = UtilProperties.getPropertyValue("mdns", "mdns.host.name", "sandflower");
-
-//    public static final String MDNS_TYPE = UtilProperties.getPropertyValue("mdns", "mdns.type", "_http._tcp.local.");
 
     public static final String MDNS_DESCRIPTION = UtilProperties.getPropertyValue("mdns", "mdns.description",
             MDNS_HOST_NAME.toLowerCase() + "_http_service");
@@ -99,5 +101,21 @@ public class MdnsUtils {
             }
         }
         return inetAddr;
+    }
+
+    public static String encodeBase64Name(String name) {
+        String base64Name = Base64.getUrlEncoder().encodeToString(name.getBytes(StandardCharsets.UTF_8));
+        if (!name.equals(base64Name)) {
+            return base64Name;
+        }
+        return null;
+    }
+
+    public static String decodeBase64Name(String name) {
+        String originalName = new String(Base64.getUrlDecoder().decode(name), StandardCharsets.UTF_8);
+        if (!name.equals(originalName)) {
+            return originalName;
+        }
+        return null;
     }
 }

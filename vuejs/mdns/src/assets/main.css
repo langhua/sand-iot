@@ -15,6 +15,28 @@ a,
   transition: 0.4s;
 }
 
+nav.home {
+  width: 45%;
+  display: inline-block;
+  text-align: left;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+div.locale {
+  width: 45%;
+  display: inline-block;
+  text-align: right;
+}
+
+nav a.router-link-exact-active {
+  color: var(--color-text);
+}
+
+nav a.router-link-exact-active:hover {
+  background-color: transparent;
+}
+
 @media (hover: hover) {
   a:hover {
     background-color: hsla(160, 100%, 37%, 0.2);
@@ -24,12 +46,14 @@ a,
 @media (min-width: 1024px) {
   body {
     display: flex;
-    place-items: center;
+    /* place-items: center; */
+    margin-top: 20px;
   }
 
   #app {
-    display: grid;
+    /* display: grid; */
     grid-template-columns: 1fr 1fr;
     padding: 0 2rem;
+    width: 70%;
   }
 }

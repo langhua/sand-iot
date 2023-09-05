@@ -18,6 +18,7 @@
  *******************************************************************************/
 package langhua.mdns.services;
 
+import langhua.mdns.common.MdnsUtils;
 import org.apache.ofbiz.base.util.Debug;
 
 import javax.jmdns.JmmDNS;
@@ -25,18 +26,20 @@ import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 import javax.jmdns.ServiceTypeListener;
+import javax.jmdns.impl.ServiceInfoImpl;
+import javax.jmdns.impl.util.ByteWrangler;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.net.InetAddress;
+import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class MdnsService implements ServiceTypeListener, ServiceListener {
     private static final String MODULE = MdnsService.class.getName();
 
-    private static Map<String, List<String>> serviceTypes = new HashMap<>();
+    private static final Map<String, Map<String, Map<String, String>>> serviceTypes = new HashMap<>();
 
     private static JmmDNS registry;
 
@@ -52,9 +55,9 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
     @Override
     public synchronized void serviceTypeAdded(ServiceEvent event) {
         String type = event.getType().trim();
-        if (!serviceTypes.keySet().contains(type)) {
+        if (!serviceTypes.containsKey(type)) {
             Debug.logVerbose("Mdns Service Type added   : " + event.getType(), MODULE);
-            serviceTypes.put(type, new ArrayList<>());
+            serviceTypes.put(type, new HashMap<>());
             registry.addServiceListener(type, this);
         }
     }
@@ -67,17 +70,29 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
     @Override
     public synchronized void serviceAdded(ServiceEvent event) {
         String type = event.getType().trim();
-        final String name = event.getName().trim();
+        String name = event.getName().trim();
+        String base64Name = MdnsUtils.encodeBase64Name(name);
+
         Debug.logInfo("Mdns Service added   : " + event.getInfo(), MODULE);
-        List<String> names;
+        Map<String, Map<String, String>> names;
         if (serviceTypes.containsKey(type)) {
             names = serviceTypes.get(type);
-            if (!names.contains(name)) {
-                names.add(name);
+            if (!names.containsKey(name)) {
+                Map<String, String> attrs = new HashMap<>();
+                if (base64Name != null && !name.equals(base64Name)) {
+                    attrs.put("base64Name", base64Name);
+                }
+                attrs.put("status", Boolean.TRUE.toString());
+                names.put(name, attrs);
             }
         } else {
-            names = new ArrayList<>();
-            names.add(name);
+            names = new HashMap<>();
+            Map<String, String> attrs = new HashMap<>();
+            if (base64Name != null && !name.equals(base64Name)) {
+                attrs.put("base64Name", base64Name);
+            }
+            attrs.put("status", Boolean.TRUE.toString());
+            names.put(name, attrs);
             serviceTypes.put(type, names);
         }
     }
@@ -87,9 +102,26 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
         String type = event.getType();
         final String name = event.getName().trim();
         Debug.logInfo("Mdns Service removed : " + name + "." + event.getType(), MODULE);
+        Map<String, Map<String, String>> names;
         if (serviceTypes.containsKey(type)) {
-            List<String> names = serviceTypes.get(type);
-            names.remove(name);
+            names = serviceTypes.get(type);
+            Map<String, String> attrs = names.get(name);
+            if (attrs != null) {
+                attrs.put("status", Boolean.FALSE.toString());
+            } else {
+                attrs = new HashMap<>();
+                attrs.put("status", Boolean.FALSE.toString());
+                names.put(name, attrs);
+            }
+        } else {
+            names = new HashMap<>();
+            Map<String, String> attrs = new HashMap<>();
+            String base64Name = MdnsUtils.encodeBase64Name(name);
+            if (base64Name != null && !name.equals(base64Name)) {
+                attrs.put("base64Name", base64Name);
+            }
+            names.put(name, attrs);
+            serviceTypes.put(type, names);
         }
     }
 
@@ -100,13 +132,107 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
 
     /**
      * Get mdns service types and related host name list.
-     *
-     * @return
      */
-    public Map<String, List<String>> getServiceTypes() {
+    public Map<String, Map<String, Map<String, String>>> getServiceTypes() {
+        Debug.logInfo("Mdns services: " + serviceTypes, MODULE);
         return serviceTypes;
     }
 
+    /**
+     * Get mdns service types and related host name list in json string.
+     */
+    public String serviceTypesToJson() {
+        Set<String> sortedTypes = new TreeSet<>(String::compareTo);
+        sortedTypes.addAll(serviceTypes.keySet());
+        StringBuilder json = new StringBuilder("{");
+        boolean isFirstType = true;
+        for (String type : sortedTypes) {
+            if (!isFirstType) {
+                json.append(",");
+            }
+            json.append("\"").append(type).append("\":");
+            Map<String, Map<String, String>> services = serviceTypes.get(type);
+            Set<String> sortedServices = new TreeSet<>(String::compareTo);
+            sortedServices.addAll(services.keySet());
+            if (sortedServices.isEmpty()) {
+                json.append("{}");
+            } else {
+                json.append("{");
+                boolean isFirstService = true;
+                for (String service : sortedServices) {
+                    if (!isFirstService) {
+                        json.append(",");
+                    }
+                    json.append("\"").append(service).append("\":{");
+                    Map<String, String> attrs = services.get(service);
+                    if (attrs.containsKey("base64Name") && attrs.get("base64Name") != null) {
+                        json.append("\"base64Name\":\"").append(attrs.get("base64Name")).append("\"");
+                    }
+                    if (attrs.containsKey("status") && attrs.get("status") != null) {
+                        if (attrs.containsKey("base64Name") && attrs.get("base64Name") != null) {
+                            json.append(",");
+                        }
+                        json.append("\"status\":\"").append(attrs.get("status")).append("\"");
+                    }
+                    json.append("}");
+                    isFirstService = false;
+                }
+                json.append("}");
+            }
+            isFirstType = false;
+        }
+        json.append("}");
+        Debug.logInfo("Mdns services in json: " + json.toString(), MODULE);
+        return json.toString();
+    }
+
+    /**
+     * Get mdns service types and related host name list in json string.
+     */
+    public String serviceDetailsToJson(String type, String name) {
+        ServiceInfoImpl info = (ServiceInfoImpl) getServiceInfo(type, name);
+        StringBuilder json = new StringBuilder("{");
+        json.append("\"name\": \"").append(name).append("\", ");
+        json.append("\"type\": \"").append(info.getTypeWithSubtype()).append("\", ");
+        json.append("\"address\": [");
+        InetAddress[] addresses = info.getInetAddresses();
+        if (addresses.length > 0) {
+            boolean first = true;
+            for (InetAddress address : addresses) {
+                if (!first) {
+                    json.append(",");
+                }
+                json.append("\"").append(address.getHostAddress()).append(':').append(info.getPort()).append("\"");
+                first = false;
+            }
+        } else {
+            json.append("\"").append("null:").append(info.getPort()).append("\"");
+        }
+        json.append("], ");
+        json.append("\"persistent\": ").append(info.isPersistent() ? "\"true\"" : "\"false\"");
+
+        if (info.getTextBytes().length > 0) {
+            Enumeration<String> propertyNames = info.getPropertyNames();
+            json.append(", \"properties\": {");
+            boolean first = true;
+            while (propertyNames.hasMoreElements()) {
+                String propertyName = propertyNames.nextElement();
+                if (!first) {
+                    json.append(", ");
+                }
+                json.append("\"").append(propertyName).append("\": \"").append(info.getPropertyString(propertyName)).append("\"");
+                first = false;
+            }
+            json.append("}");
+        }
+        json.append("}");
+        Debug.logInfo("Mdns service{type: " + type + ", name: " + name + "} in json: " + json.toString(), MODULE);
+        return json.toString();
+    }
+
+    /**
+     * Get a mdns service info by specified type and name
+     */
     public ServiceInfo getServiceInfo(String type, String name) {
         ServiceInfo[] infos = registry.getServiceInfos(type, name);
         if (infos != null && infos.length > 0) {
