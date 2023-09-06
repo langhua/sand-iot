@@ -28,12 +28,28 @@ Jmdns Browser是jmdns源码中自带的，基于Java Swing实现的。缺省情�
 ![jmdns-browser-exec](./images/jmdns-browser-exec.png)
 
 ### Vite-Vue3实现mdns browser
-Vite-Vue3代码在vuejs/mdns目录下，推荐在VSCode中打开，进行开发和调试。
+[Vite-Vue3](https://cn.vitejs.dev/guide/)代码在vuejs/mdns目录下，推荐在VSCode中打开，进行开发和调试。
 
 开发过程中遇到的问题，主要是因为sand-iot文件夹是软链接引起的，因而配置上需要注意的地方，有两点：
 1. 在vite.config.ts中，配置preserveSymlinks: true，否则vite编译时，会报错。
 
-2. 在build.gradle中，要配置workingDir为实际目录，而不是软链接目录，才能编译出正确的vue执行代码：
+2. 在build.gradle中，要配置workingDir必须为实际目录，而不是软链接目录，mdns详情页面才能执行：
 ```groovy
 workingDir = file(workingDirPath).toPath().toRealPath().toFile()
 ```
+
+### Java测试用例
+运行JmdnsTests测试用例：
+1. 如下图所示，新建一个JmdnsTests测试用例：
+   ![新建JmdnsTests测试用例](images/mdns_JmdnsTests.png)
+
+   在运行一栏填入：
+   ```gradle
+   :test --tests "langhua.mdns.test.JmdnsTests"
+   ```
+
+2. 运行JmdnsTests：
+   ![运行JmdnsTests测试用例](images/mdns-test-wait-to-proof.png)
+
+3. 打开一个终端，运行ping sandflower，应可以正确执行，如下图所示：
+   ![运行ping sandflower](images/ping-sandflower.png)
