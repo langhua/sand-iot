@@ -27,7 +27,6 @@ import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 import javax.jmdns.ServiceTypeListener;
 import javax.jmdns.impl.ServiceInfoImpl;
-import javax.jmdns.impl.util.ByteWrangler;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Enumeration;
@@ -39,7 +38,7 @@ import java.util.TreeSet;
 public class MdnsService implements ServiceTypeListener, ServiceListener {
     private static final String MODULE = MdnsService.class.getName();
 
-    private static final Map<String, Map<String, Map<String, String>>> serviceTypes = new HashMap<>();
+    private static final Map<String, Map<String, Map<String, String>>> SERVICE_TYPES = new HashMap<>();
 
     private static JmmDNS registry;
 
@@ -55,9 +54,9 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
     @Override
     public synchronized void serviceTypeAdded(ServiceEvent event) {
         String type = event.getType().trim();
-        if (!serviceTypes.containsKey(type)) {
+        if (!SERVICE_TYPES.containsKey(type)) {
             Debug.logVerbose("Mdns Service Type added   : " + event.getType(), MODULE);
-            serviceTypes.put(type, new HashMap<>());
+            SERVICE_TYPES.put(type, new HashMap<>());
             registry.addServiceListener(type, this);
         }
     }
@@ -75,8 +74,8 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
 
         Debug.logInfo("Mdns Service added   : " + event.getInfo(), MODULE);
         Map<String, Map<String, String>> names;
-        if (serviceTypes.containsKey(type)) {
-            names = serviceTypes.get(type);
+        if (SERVICE_TYPES.containsKey(type)) {
+            names = SERVICE_TYPES.get(type);
             if (!names.containsKey(name)) {
                 Map<String, String> attrs = new HashMap<>();
                 if (base64Name != null && !name.equals(base64Name)) {
@@ -93,7 +92,7 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
             }
             attrs.put("status", Boolean.TRUE.toString());
             names.put(name, attrs);
-            serviceTypes.put(type, names);
+            SERVICE_TYPES.put(type, names);
         }
     }
 
@@ -103,8 +102,8 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
         final String name = event.getName().trim();
         Debug.logInfo("Mdns Service removed : " + name + "." + event.getType(), MODULE);
         Map<String, Map<String, String>> names;
-        if (serviceTypes.containsKey(type)) {
-            names = serviceTypes.get(type);
+        if (SERVICE_TYPES.containsKey(type)) {
+            names = SERVICE_TYPES.get(type);
             Map<String, String> attrs = names.get(name);
             if (attrs != null) {
                 attrs.put("status", Boolean.FALSE.toString());
@@ -121,7 +120,7 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
                 attrs.put("base64Name", base64Name);
             }
             names.put(name, attrs);
-            serviceTypes.put(type, names);
+            SERVICE_TYPES.put(type, names);
         }
     }
 
@@ -134,8 +133,8 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
      * Get mdns service types and related host name list.
      */
     public Map<String, Map<String, Map<String, String>>> getServiceTypes() {
-        Debug.logInfo("Mdns services: " + serviceTypes, MODULE);
-        return serviceTypes;
+        Debug.logInfo("Mdns services: " + SERVICE_TYPES, MODULE);
+        return SERVICE_TYPES;
     }
 
     /**
@@ -143,7 +142,7 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
      */
     public String serviceTypesToJson() {
         Set<String> sortedTypes = new TreeSet<>(String::compareTo);
-        sortedTypes.addAll(serviceTypes.keySet());
+        sortedTypes.addAll(SERVICE_TYPES.keySet());
         StringBuilder json = new StringBuilder("{");
         boolean isFirstType = true;
         for (String type : sortedTypes) {
@@ -151,7 +150,7 @@ public class MdnsService implements ServiceTypeListener, ServiceListener {
                 json.append(",");
             }
             json.append("\"").append(type).append("\":");
-            Map<String, Map<String, String>> services = serviceTypes.get(type);
+            Map<String, Map<String, String>> services = SERVICE_TYPES.get(type);
             Set<String> sortedServices = new TreeSet<>(String::compareTo);
             sortedServices.addAll(services.keySet());
             if (sortedServices.isEmpty()) {

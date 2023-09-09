@@ -28,6 +28,10 @@ import org.apache.ofbiz.base.util.Debug;
 public class IsolationTests extends AbstractTestMqtt {
     private static final String MODULE = IsolationTests.class.getName();
 
+    public IsolationTests(String name) {
+        super(name);
+    }
+
     /**
      * @return the suite of tests being tested
      */

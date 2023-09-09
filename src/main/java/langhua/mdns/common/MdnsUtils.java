@@ -18,11 +18,9 @@
  *******************************************************************************/
 package langhua.mdns.common;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.UtilProperties;
 
-import java.io.UnsupportedEncodingException;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;

@@ -28,6 +28,10 @@ import org.apache.ofbiz.base.util.Debug;
 public class FunctionTests extends AbstractTestMqtt {
     private static final String MODULE = FunctionTests.class.getName();
 
+    public FunctionTests(String name) {
+        super(name);
+    }
+
     /**
      * @return the suite of tests being tested
      */

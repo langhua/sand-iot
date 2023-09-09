@@ -18,22 +18,24 @@
  *******************************************************************************/
 package langhua.mqtt.onenet.test;
 
-import junit.framework.TestCase;
 import langhua.mqtt.common.MqttClientThread;
 import langhua.mqtt.onenet.services.OnenetHttpApi;
 import langhua.mqtt.onenet.services.OnenetMqttDevice;
 import langhua.mqtt.onenet.services.OnenetMqttsDevice;
 import langhua.mqtt.onenet.utils.CommonUtils;
+import org.apache.ofbiz.base.lang.JSON;
 import org.apache.ofbiz.base.util.Debug;
 import org.apache.ofbiz.base.util.UtilProperties;
+import org.apache.ofbiz.service.testtools.OFBizTestCase;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-public abstract class AbstractTestMqtt extends TestCase {
+public abstract class AbstractTestMqtt extends OFBizTestCase {
 
     private static OnenetMqttDevice group1Device1Tcp = null;
     private static OnenetMqttDevice group1Device2Tcp = null;
@@ -75,6 +77,10 @@ public abstract class AbstractTestMqtt extends TestCase {
     protected static final String GROUP2_DEVICE2_NAME = UtilProperties.getPropertyValue("mqttTest", "mqtt.onenet.group2.device2.name");
     protected static final String GROUP2_DEVICE2_ID = UtilProperties.getPropertyValue("mqttTest", "mqtt.onenet.group2.device2.id");
     protected static final String GROUP2_DEVICE2_KEY = UtilProperties.getPropertyValue("mqttTest", "mqtt.onenet.group2.device2.key");
+
+    public AbstractTestMqtt(String name) {
+        super(name);
+    }
 
     /**
      * Initial all tcp-connected mqtt devices.
@@ -303,6 +309,18 @@ public abstract class AbstractTestMqtt extends TestCase {
             return true;
         } else {
             Debug.logInfo("--- Command[" + command + "] error: " + result, module);
+            JSON json = JSON.from(result);
+            try {
+                HashMap resultMap = json.toObject(HashMap.class);
+                if (resultMap.containsKey("errno")) {
+                    Integer errno = (Integer) resultMap.get("errno");
+                    if (errno == 15) {
+                        Debug.logInfo("--- Please make sure your device[" + device.getDeviceName() + "] is on and connected to OneNet.", module);
+                    }
+                }
+            } catch (IOException e) {
+                Debug.logError(e, module);
+            }
             return false;
         }
     }
