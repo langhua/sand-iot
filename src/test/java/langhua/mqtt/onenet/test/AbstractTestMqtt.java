@@ -300,6 +300,7 @@ public abstract class AbstractTestMqtt extends OFBizTestCase {
      * @param module
      * @return
      */
+    @SuppressWarnings("unchecked")
     protected boolean runCommandTest(OnenetMqttDevice device, String groupId, String groupKey, String command, String module) {
         OnenetHttpApi httpApi = new OnenetHttpApi(groupId, groupKey);
         String result = OnenetHttpApi.sendCommand(httpApi.getApiToken(), device.getDeviceId(), command);
@@ -311,7 +312,7 @@ public abstract class AbstractTestMqtt extends OFBizTestCase {
             Debug.logInfo("--- Command[" + command + "] error: " + result, module);
             JSON json = JSON.from(result);
             try {
-                HashMap resultMap = json.toObject(HashMap.class);
+                HashMap<String, Object> resultMap = json.toObject(HashMap.class);
                 if (resultMap.containsKey("errno")) {
                     Integer errno = (Integer) resultMap.get("errno");
                     if (errno == 15) {
