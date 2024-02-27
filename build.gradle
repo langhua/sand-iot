@@ -18,12 +18,23 @@
  */
 plugins.apply("com.github.node-gradle.node")
 
+def casProjectFound = false
+try {
+    project(":plugins:cas")
+    casProjectFound = true
+} catch (UnknownProjectException e) {
+    println("No plugins/cas/ found")
+}
+
 dependencies {
     pluginLibsCompile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5',
                       'com.google.code.gson:gson:2.10.1',
                       'com.squareup.okhttp3:okhttp:4.11.0',
-                      'org.jmdns:jmdns:3.5.8',
-                      'org.slf4j:slf4j-simple:2.0.1'
+                      'org.jmdns:jmdns:3.5.8'
+
+    if (!casProjectFound) {
+        pluginLibsCompile 'org.slf4j:slf4j-simple:2.0.1'
+    }
 }
 
 task mdnsDist(type: NpmTask) {
