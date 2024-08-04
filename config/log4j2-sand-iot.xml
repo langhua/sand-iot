@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Specify the refresh internal in seconds. -->
+<Configuration monitorInterval="60">
+    <Appenders>
+        <RollingFile name="sand-iot" fileName="runtime/logs/sand-iot/sand-iot.log" append="true"
+                     filePattern="runtime/logs/sand-iot/sand-iot-%d{yyyy-MM-dd-HH}-%i.log">
+            <PatternLayout pattern="%date{DEFAULT} |%-20.20thread |%-30.30logger{1}|%level{length=1}| %message%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="1 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <AsyncLogger name="javax.jmdns" level="debug">
+            <AppenderRef ref="sand-iot"/>
+        </AsyncLogger>
+        <AsyncLogger name="langhua.iot" level="warn">
+            <AppenderRef ref="sand-iot"/>
+        </AsyncLogger>
+        <AsyncLogger name="langhua.mdns" level="warn">
+            <AppenderRef ref="sand-iot"/>
+        </AsyncLogger>
+        <AsyncLogger name="langhua.mqtt" level="warn">
+            <AppenderRef ref="sand-iot"/>
+        </AsyncLogger>
+        <AsyncLogger name="langhua.servlet" level="warn">
+            <AppenderRef ref="sand-iot"/>
+        </AsyncLogger>
+    </Loggers>
+</Configuration>

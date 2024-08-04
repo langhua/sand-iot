@@ -18,23 +18,40 @@
  */
 plugins.apply("com.github.node-gradle.node")
 
-def casProjectFound = false
-try {
-    project(":plugins:cas")
-    casProjectFound = true
-} catch (UnknownProjectException e) {
-    println("No plugins/cas/ found")
+
+def logArgFound = false
+def originalLog4jConfig = ""
+def log4jConfig = ""
+
+applicationDefaultJvmArgs.each { jvmArg ->
+    if (jvmArg && jvmArg.startsWith("-Dlog4j.configurationFile=") && !logArgFound) {
+        originalLog4jConfig = jvmArg
+        if (!jvmArg.endsWith("=")) {
+            jvmArg += ","
+        }
+        log4jConfig = jvmArg + "log4j2-sand-iot.xml"
+        logArgFound = true
+    }
+}
+
+if (!logArgFound) {
+    applicationDefaultJvmArgs.add('-Dlog4j.configurationFile=log4j2.xml,log4j2-sand-iot.xml')
+} else {
+    applicationDefaultJvmArgs.remove(originalLog4jConfig)
+    applicationDefaultJvmArgs.add(log4jConfig)
 }
 
 dependencies {
     pluginLibsCompile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5',
                       'com.google.code.gson:gson:2.10.1',
                       'com.squareup.okhttp3:okhttp:4.11.0',
-                      'org.jmdns:jmdns:3.5.8'
+                      'org.jmdns:jmdns:3.5.9'
 
-    if (!casProjectFound) {
-        pluginLibsCompile 'org.slf4j:slf4j-simple:2.0.1'
+    pluginLibsRuntime ('org.slf4j:slf4j-api:1.7.36') {
+        force true
     }
+
+    pluginLibsRuntime 'com.lmax:disruptor:3.4.2'
 }
 
 task mdnsDist(type: NpmTask) {

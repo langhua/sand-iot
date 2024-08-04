@@ -1,5 +1,7 @@
 ## sand-iot开发笔记
 
+### 开发环境搭建
+
 推荐使用idea community来开发sand-iot模块。步骤如下：
 1. 下载和安装idea community
 2. 在idea中，从github检出[ofbiz-framework](https://github.com/apache/ofbiz-framework)、[sand-iot](https://github.com/langhua/sand-iot)到本地，比如
@@ -68,3 +70,15 @@
    ```java
    public class GroovyScriptTestCase extends GroovyAssert {
    ```
+
+### 日志
+
+日志在模块的config/log4j2-sand-iot.xml中配置，日志文件在runtime/logs/sand-iot/目录下，文件名是sand-iot.log。
+
+缺省javax.jmdns的日志级别是debug，可以修改为warn，以减少日志信息：
+
+```xml
+        <AsyncLogger name="javax.jmdns" level="debug">
+            <AppenderRef ref="sand-iot"/>
+        </AsyncLogger>
+```
